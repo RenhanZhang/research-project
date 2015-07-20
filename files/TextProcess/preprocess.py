@@ -19,3 +19,5 @@ def word_freq(s):
     '''
     return Counter(s.split())
 
+def rm_space(s):
+    return ' '.join(s.split())
