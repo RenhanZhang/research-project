@@ -1,5 +1,6 @@
 from django.http import HttpResponse, Http404
 import datetime
+from django.shortcuts import render
 
 def hello(request):
     return HttpResponse("Hello world")
@@ -20,3 +21,7 @@ def hours_ahead(request, offset):
 
     html = '<html><body>It is now %s. <html><body>' %now
     return HttpResponse(html)
+
+
+def home(request):
+    return render(request, 'home.html')

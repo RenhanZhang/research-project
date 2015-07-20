@@ -19,11 +19,12 @@ from django.contrib import admin
 from views import hello, current_datetime, hours_ahead
 #sys.path.append(os.path.abspath('..'))
 #print sys.path
-from get_blogs import views
-
+from search_blogs import search_views
+import views
 
 urlpatterns = patterns('',
     #url(r'^admin/', include(admin.site.urls)),
-    url(r'^hello/$', hello),
-    url(r'^$', views.search),
+    #url(r'^hello/$', hello),
+    url(r'^$', views.home),
+    url(r'^search_blog', search_views.search_blog_by_link)
 )

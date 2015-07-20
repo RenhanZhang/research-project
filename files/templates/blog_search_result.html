@@ -1,0 +1,13 @@
+<html>
+<head>
+    <title>Search a blog</title>
+</head>
+<body>
+    You searched for blog {{ blog_name }}
+
+    {% for post in posts %}
+        <p>{{ post.content }}</p>
+    {% endfor %}
+
+</body>
+</html>
