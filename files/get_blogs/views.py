@@ -5,6 +5,7 @@ from django.template import Template, Context
 import os
 # Create your views here.
 
+from google api
 def search(request):
     #return render(request, 'search_page.html')
-    return HttpResponse('Please submit a search term.')
+    posts =
