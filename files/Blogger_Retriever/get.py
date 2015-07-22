@@ -12,13 +12,13 @@ def parse_post(post):
     # extract year-month-day
     time_pat = '(\d{4})-(\d{2})-(\d{2})'
     (year, month, day) = re.search(time_pat, post['published']).groups()
-    post['pub_year'] = year
-    post['pub_month'] = month
-    post['pub_day'] = day
+    post['pub_year'] = int(year)
+    post['pub_month'] = int(month)
+    post['pub_day'] = int(day)
 
     # use beautiful soup to parse the content
     soup = BeautifulSoup(post['content'])
-    post['content'] = soup.get_text()
+    post['content'] = soup.get_text()   # replace \u2018 with '
 
     # get author_id and the name
     post['author_id'] = post['author']['id']
