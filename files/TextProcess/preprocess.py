@@ -1,5 +1,4 @@
 from nltk.corpus import stopwords
-from collections import Counter
 import re
 from PorterStemmer import PorterStemmer
 import ipdb

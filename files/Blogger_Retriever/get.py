@@ -1,7 +1,4 @@
 import requests
-import urllib2
-import ast
-import nltk
 from bs4 import BeautifulSoup
 import re
 import ipdb
