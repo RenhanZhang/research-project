@@ -4,7 +4,9 @@ import ast
 import nltk
 from bs4 import BeautifulSoup
 import re
+import ipdb
 
+MAX_POSTS = 50
 api_key = 'AIzaSyAsO-ID5sIxbtvc59ir5v2xbVxZTA02VDo'
 
 
@@ -17,8 +19,9 @@ def parse_post(post):
     post['pub_day'] = int(day)
 
     # use beautiful soup to parse the content
+    #ipdb.set_trace()
     soup = BeautifulSoup(post['content'])
-    post['content'] = soup.get_text()   # replace \u2018 with '
+    post['content'] = soup.get_text()
 
     # get author_id and the name
     post['author_id'] = post['author']['id']
@@ -41,8 +44,8 @@ def get_blog_by_link(blog_url):
 
 def get_blog_by_ID(blog_id):
 
-    get_all_posts_url = 'https://www.googleapis.com/blogger/v3/blogs/' + str(blog_id) + '/posts?key=' + api_key
-    blog_info = get(get_all_posts_url)
+    get_posts_url = 'https://www.googleapis.com/blogger/v3/blogs/' + str(blog_id) + '/posts?key=' + api_key
+    blog_info = get(get_posts_url)
     all_posts = []
 
     for post in blog_info['items']:

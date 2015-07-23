@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 #from django.template.loader import get_template
 from django.http import HttpResponse
-from django.template import Template, Context
+from django.template import Template, Context, RequestContext
+
 import os
 # Create your views here.
 
@@ -18,6 +19,9 @@ def search_blog_by_link(request):
 
     visualize.words_vs_time(posts)
 
-    return HttpResponse(request, 'done')
+    ctx = RequestContext({'posts': posts, 'blog_name': blog['name'], 'MEDIA_URL': 'asd'})
+    #return render(request, 'blog_search_result.html', ctx)
+    return render_to_response('blog_search_result.html', {'posts': posts, 'blog_name': blog['name']},
+                              context_instance=RequestContext(request))
 
 

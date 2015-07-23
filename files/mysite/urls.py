@@ -21,10 +21,14 @@ from views import hello, current_datetime, hours_ahead
 #print sys.path
 from search_blogs import search_views
 import views
+import settings
 
 urlpatterns = patterns('',
     #url(r'^admin/', include(admin.site.urls)),
     #url(r'^hello/$', hello),
     url(r'^$', views.home),
-    url(r'^search_blog', search_views.search_blog_by_link)
+    url(r'^search_blog', search_views.search_blog_by_link),
+
+    (r'^media/(?P<path>.*)$', 'django.views.static.serve',
+                 {'document_root': settings.MEDIA_ROOT}),
 )

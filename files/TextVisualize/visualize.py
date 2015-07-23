@@ -37,14 +37,15 @@ def words_vs_time(posts, freq_words=[]):
 
     if not freq_words_provided:
         sorted_list = sorted(global_word_count.items(), key=operator.itemgetter(1), reverse=True)
-        sorted_list = sorted_list[:5]
-        freq_words = [x[0] for x in sorted_list]
+
+        freq_words = [x[0] for x in sorted_list[:5]]
 
     dates = sorted(post_dict.keys())
-
+    # ipdb.set_trace()
     # maintain max_occurence for setting y axis of the plot
     max_occurence = 0
 
+    print freq_words
     for word in freq_words:
 
         counts = []

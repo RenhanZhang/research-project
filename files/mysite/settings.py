@@ -57,6 +57,8 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'mysite.urls'
 
+MEDIA_ROOT = '/Users/rhzhang/Desktop/research proj/files/media'
+MEDIA_URL = '/media/'
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__)) + '/..'
 

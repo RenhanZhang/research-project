@@ -2,6 +2,7 @@ from nltk.corpus import stopwords
 from collections import Counter
 import re
 from PorterStemmer import PorterStemmer
+import ipdb
 
 def extract(l, pat, str, sub):
     l.extend(re.findall(pat,str))
@@ -25,9 +26,10 @@ def tokenizeText(str):
     pat = '(?:\w+\.)+'
     str = extract(l, pat, str, '')
 
+    #ipdb.set_trace()
     #tokenization of 's, 're, 'm
     pat = '\'s'
-    str = extract(l, pat, str, '')
+    str = re.sub(pat, '', str)
 
     pat = '\'re'
     str = re.sub(pat, ' are', str)
@@ -71,6 +73,7 @@ def word_freq(s):
 
     return Counter(s.split())
 '''
+
 def rm_space(s):
     return ' '.join(s.split())
 
