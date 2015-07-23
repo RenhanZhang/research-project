@@ -44,16 +44,30 @@ def get_blog_by_link(blog_url):
 
 def get_blog_by_ID(blog_id):
 
-    get_posts_url = 'https://www.googleapis.com/blogger/v3/blogs/' + str(blog_id) + '/posts?key=' + api_key
-    blog_info = get(get_posts_url)
+    get_blog_url = 'https://www.googleapis.com/blogger/v3/blogs/' + str(blog_id) + '/posts?key=' + api_key
     all_posts = []
 
-    for post in blog_info['items']:
-        post_id = post['id']
-        get_post_url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts/%s?key=%s' %(str(blog_id), post_id, api_key)
-        post_detail = get(get_post_url)
+    while True:
+        print get_blog_url
+        blog_info = get(get_blog_url)
 
-        all_posts.append(parse_post(post_detail))
+        for post in blog_info['items']:
+            post_id = post['id']
+            get_post_url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts/%s?key=%s' %(str(blog_id), post_id, api_key)
+            post_detail = get(get_post_url)
+            all_posts.append(parse_post(post_detail))
+
+        if len(all_posts) >= MAX_POSTS:
+            break
+
+        # ipdb.set_trace()
+        # if all the posts have been obtained
+        next_page_token = blog_info.get('nextPageToken', None)
+        if next_page_token is None:
+            break
+        else:
+            get_blog_url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts?key=%s&pageToken=%s' \
+                           %(str(blog_id), api_key, next_page_token)
 
     return all_posts
 

@@ -64,5 +64,5 @@ def words_vs_time(posts, freq_words=[]):
     buffer = timedelta(days=2)
     plt.axis([min(dates) - buffer, max(dates) + buffer, 0,  int(1.2 * max_occurence)])
     plt.legend(freq_words, loc='upper left')
-    plt.savefig('wf_vs_time.png')
+    plt.savefig('media/wf_vs_time.png')
 
