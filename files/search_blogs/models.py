@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-
+'''
 class Publisher(models.Model):
     name = models.CharField(max_length=30)
     address = models.CharField(max_length=50)
@@ -29,3 +29,4 @@ class Book(models.Model):
 
     def __unicode__(self):
         return self.title
+'''
