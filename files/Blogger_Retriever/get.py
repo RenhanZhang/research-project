@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import ipdb
 
-MAX_POSTS = 50
+MAX_POSTS = 1
 api_key = 'AIzaSyAsO-ID5sIxbtvc59ir5v2xbVxZTA02VDo'
 
 

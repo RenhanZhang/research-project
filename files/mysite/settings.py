@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-
+import socket
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -23,11 +23,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'mlo3g8e4g+q(nbh%h2=g#7p&d!3ql%eswl#*#_v#kyl+=wofe_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+'.nlp.eecs.umich.edu',
+'.nlp.eecs.umich.edu.'
+]
 
-
+DEBUG = False
 # Application definition
 
 INSTALLED_APPS = (
@@ -42,10 +44,14 @@ INSTALLED_APPS = (
     'search_blogs',
 )
 
+# ADMINS
+ADMINS = (
+    ('Renhan Zhang', 'renhzhang2@gmail.com'),
+)
 MIDDLEWARE_CLASSES = (
 
     #'django.contrib.sessions.middleware.SessionMiddleware',
-    #'django.middleware.common.CommonMiddleware',
+    'django.middleware.common.CommonMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
     #'django.contrib.auth.middleware.AuthenticationMiddleware',
     #'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
@@ -53,6 +59,11 @@ MIDDLEWARE_CLASSES = (
     #'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #'django.middleware.security.SecurityMiddleware',
 
+)
+SEND_BROKEN_LINK_EMAILS = True
+
+MANAGERS = (
+    ( 'Renhan Zhang', 'renhzhang2@gmail.com'),
 )
 
 ROOT_URLCONF = 'mysite.urls'
@@ -67,9 +78,14 @@ TEMPLATE_DIRS = (
 )
 
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
+
+'django.template.loaders.filesystem.Loader',
+'django.template.loaders.app_directories.Loader', 
+
+#    'django.template.loaders.filesystem.load_template_source',
+#    'django.template.loaders.app_directories.load_template_source',
+
+##     'django.template.loaders.eggs.load_template_source',
 )
 
 TEMPLATES = [
