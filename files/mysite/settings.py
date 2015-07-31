@@ -29,7 +29,7 @@ ALLOWED_HOSTS = [
 '.nlp.eecs.umich.edu.'
 ]
 
-DEBUG = False
+DEBUG = True
 # Application definition
 
 INSTALLED_APPS = (
@@ -40,7 +40,7 @@ INSTALLED_APPS = (
     #'django.contrib.sessions',
     #'django.contrib.messages',
     #'django.contrib.staticfiles',
-
+    'Blogger_Retriever',
     'search_blogs',
 )
 

@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import ipdb
 
-MAX_POSTS = 1
+MAX_POSTS = 10
 api_key = 'AIzaSyAsO-ID5sIxbtvc59ir5v2xbVxZTA02VDo'
 
 
@@ -36,6 +36,7 @@ def get_blog_by_link(blog_url):
 
     url = 'https://www.googleapis.com/blogger/v3/blogs/byurl?url=' + blog_url + '&key=' + api_key
     blog_summary = get(url)
+    #assert False, locals()
     posts = get_blog_by_ID(blog_summary['id'])
     return blog_summary, posts
 
@@ -68,6 +69,5 @@ def get_blog_by_ID(blog_id):
 
     return all_posts
 
-a = get_blog_by_link('http://googleblog.blogspot.com/')
-b = 2
+#a = get_blog_by_link('http://googleblog.blogspot.com/')
 #get_blog_byID(2399953)

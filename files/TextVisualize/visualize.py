@@ -1,8 +1,13 @@
+import matplotlib
+matplotlib.use('Agg')
 from datetime import datetime, timedelta
 from TextProcess import preprocess
 import operator
 from matplotlib import pyplot as plt
+
 import ipdb
+import StringIO
+import urllib, base64
 
 def words_vs_time(posts, freq_words=[]):
     '''
@@ -64,5 +69,16 @@ def words_vs_time(posts, freq_words=[]):
     buffer = timedelta(days=2)
     plt.axis([min(dates) - buffer, max(dates) + buffer, 0,  int(1.2 * max_occurence)])
     plt.legend(freq_words, loc='upper left')
-    plt.savefig('media/wf_vs_time.png')
+    #plt.savefig('/home/rhzhang/wf_vs_time.png')
+    #plt.savefig('/home/rhzhang/public_html/research-project/files/media/wf_vs_time.png')
+    
+    fig = plt.gcf()
+    fig.set_size_inches(18.5, 10.5)
 
+    imgdata = StringIO.StringIO()
+    fig.savefig(imgdata, format='png')
+    print "Content-Type: image/png\n"
+    imgdata.seek(0)  # rewind the data
+
+    uri = urllib.quote(base64.b64encode(imgdata.buf))
+    return uri
