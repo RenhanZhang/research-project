@@ -28,12 +28,12 @@ def parse_post(post):
 
 def get(url):
    # return the content in json format
-    print url
     data = requests.get(url)
     return data.json()
 
 def get_blog_by_link(blog_url):
-
+    if not re.match('http', blog_url):
+        blog_url = 'http://' + blog_url
     url = 'https://www.googleapis.com/blogger/v3/blogs/byurl?url=' + blog_url + '&key=' + api_key
     blog_summary = get(url)
     #assert False, locals()
