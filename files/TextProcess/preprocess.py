@@ -68,6 +68,11 @@ def stem_words(l):
     ps = PorterStemmer()
     return [ps.stem(x, 0, len(x) - 1) for x in l]
 
+def rm_stopwords(s):
+    with open('/home/rhzhang/public_html/research-project/files/TextProcess/stopwords.txt', 'r') as f:
+        sw = f.readlines()
+    sw = [re.sub('[\n\s]', '', x) for x in sw]
+    return ' '.join([w for w in s.split() if w.lower() not in sw])
 def preprocess(s):
 
     for u, v in special_char:
@@ -77,7 +82,7 @@ def preprocess(s):
 
     #s = str(s)
     s = rm_space(s)
-    #s = rm_stopwords(s)
+    s = rm_stopwords(s)
     l = tokenizeText(s)
     word_count_dict = {}
     for word in l:

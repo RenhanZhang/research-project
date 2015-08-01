@@ -3,10 +3,12 @@
     <title>Search a blog</title>
 </head>
 <body>
-    You searched for blog {{ blog_name }}
+    <h1>You searched for blog {{ blog_name }}</h1>
 
     <h2>Word Frequency v.s. Time</h2>
     <img height="600" width="900" alt="embedded" src="data:image/png;base64,{{inline_png}}"/>
+    
+    <h2>Below are the contents of some of the posts</h2>
     {% for post in posts %}
         <p>{{ post.content }}</p>
     {% endfor %}

@@ -49,21 +49,19 @@ def words_vs_time(posts, freq_words=[]):
     # ipdb.set_trace()
     # maintain max_occurence for setting y axis of the plot
     max_occurence = 0
-
-    print freq_words
-    for word in freq_words:
-
+    colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
+    
+    for (word, color) in zip(freq_words, colors):
         counts = []
         for date in dates:
             counts.append(post_dict[date].get(word, 0))
 
         # updating max_occurence
         max_occurence = max_occurence if max_occurence > max(counts) else max(counts)
-        plt.plot_date(dates, counts, linestyle='-')
+        plt.plot_date(dates, counts, linestyle='-', c=color)
 
     fig = plt.gcf()
     fig.set_size_inches(18.5, 10.5)
-
     # set the x axis to [one day before the earliest, one day after the latest]
     # set y axis to [0, max word count]
     buffer = timedelta(days=2)
