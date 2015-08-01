@@ -37,6 +37,8 @@ def get_blog_by_link(blog_url):
     url = 'https://www.googleapis.com/blogger/v3/blogs/byurl?url=' + blog_url + '&key=' + api_key
     blog_summary = get(url)
     #assert False, locals()
+    if 'id' not in blog_summary:
+        return None, None
     posts = get_blog_by_ID(blog_summary['id'])
     return blog_summary, posts
 

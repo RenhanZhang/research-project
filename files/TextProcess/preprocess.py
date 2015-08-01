@@ -1,3 +1,4 @@
+import os
 import re
 from PorterStemmer import PorterStemmer
 import ipdb
@@ -69,7 +70,8 @@ def stem_words(l):
     return [ps.stem(x, 0, len(x) - 1) for x in l]
 
 def rm_stopwords(s):
-    with open('/home/rhzhang/public_html/research-project/files/TextProcess/stopwords.txt', 'r') as f:
+    path = os.path.dirname(os.path.abspath(__file__)) + '/stopwords.txt'  
+    with open(path, 'r') as f:
         sw = f.readlines()
     sw = [re.sub('[\n\s]', '', x) for x in sw]
     return ' '.join([w for w in s.split() if w.lower() not in sw])

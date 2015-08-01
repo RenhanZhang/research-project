@@ -17,7 +17,8 @@ def search_blog_by_link(request):
 
     blog_link = request.GET['link']
     blog, posts = get.get_blog_by_link(blog_link)
-    # return HttpResponse('hellow there')
+    if blog is None:
+        return HttpResponse('Please input a valid url')
     
     uri = visualize.words_vs_time(posts)
     
