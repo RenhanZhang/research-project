@@ -51,6 +51,7 @@ def words_vs_time(posts, freq_words=[]):
     max_occurence = 0
     colors = ['r', 'g', 'b', 'y', 'c', 'm', 'k']
     
+   
     for (word, color) in zip(freq_words, colors):
         counts = []
         for date in dates:
@@ -59,7 +60,7 @@ def words_vs_time(posts, freq_words=[]):
         # updating max_occurence
         max_occurence = max_occurence if max_occurence > max(counts) else max(counts)
         plt.plot_date(dates, counts, linestyle='-', c=color)
-
+    
     fig = plt.gcf()
     fig.set_size_inches(18.5, 10.5)
     # set the x axis to [one day before the earliest, one day after the latest]
@@ -67,11 +68,6 @@ def words_vs_time(posts, freq_words=[]):
     buffer = timedelta(days=2)
     plt.axis([min(dates) - buffer, max(dates) + buffer, 0,  int(1.2 * max_occurence)])
     plt.legend(freq_words, loc='upper left')
-    #plt.savefig('/home/rhzhang/wf_vs_time.png')
-    #plt.savefig('/home/rhzhang/public_html/research-project/files/media/wf_vs_time.png')
-    
-    fig = plt.gcf()
-    fig.set_size_inches(18.5, 10.5)
 
     imgdata = StringIO.StringIO()
     fig.savefig(imgdata, format='png')
