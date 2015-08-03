@@ -32,11 +32,13 @@ def get(url):
     return data.json()
 
 def get_blog_by_link(blog_url):
+
     if not re.match('http', blog_url):
         blog_url = 'http://' + blog_url
+
     url = 'https://www.googleapis.com/blogger/v3/blogs/byurl?url=' + blog_url + '&key=' + api_key
     blog_summary = get(url)
-    #assert False, locals()
+
     if 'id' not in blog_summary:
         return None, None
     posts = get_blog_by_ID(blog_summary['id'])
@@ -54,6 +56,7 @@ def get_blog_by_ID(blog_id):
         for post in blog_info['items']:
             post_id = post['id']
             get_post_url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts/%s?key=%s' %(str(blog_id), post_id, api_key)
+            print get_blog_url
             post_detail = get(get_post_url)
             all_posts.append(parse_post(post_detail))
 
@@ -71,5 +74,5 @@ def get_blog_by_ID(blog_id):
 
     return all_posts
 
-#a = get_blog_by_link('http://googleblog.blogspot.com/')
+a = get_blog_by_link('http://d2r-travel.blogspot.com/')
 #get_blog_byID(2399953)

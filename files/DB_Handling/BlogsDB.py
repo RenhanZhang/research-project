@@ -10,4 +10,7 @@ class BlogsDB_Handler:
     def insert_blog(blog):
         
         ''' blog: a dictionary-like object contains info
-                  as in the 
+                  as in the
+        '''
+
+        a = 1
