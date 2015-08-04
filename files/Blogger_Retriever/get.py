@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import ipdb
+import profile_scraper
 
 MAX_POSTS = 10
 api_key = 'AIzaSyAsO-ID5sIxbtvc59ir5v2xbVxZTA02VDo'
@@ -20,9 +21,11 @@ def parse_post(post):
     soup = BeautifulSoup(post['content'])
     post['content'] = soup.get_text()
 
+    '''
     # get author_id and the name
     post['author_id'] = post['author']['id']
     post['author_display_name'] = post['author']['displayName']
+    '''
 
     return post
 
@@ -37,16 +40,23 @@ def get_blog_by_link(blog_url):
         blog_url = 'http://' + blog_url
 
     url = 'https://www.googleapis.com/blogger/v3/blogs/byurl?url=' + blog_url + '&key=' + api_key
+    print url
     blog_summary = get(url)
 
     if 'id' not in blog_summary:
         return None, None
     posts = get_blog_by_ID(blog_summary['id'])
-    return blog_summary, posts
+
+    if len(posts) > 0:
+        profile_url = posts[0]['author']['url']
+
+    profile = profile_scraper.scrape_profile(profile_url)
+    return profile, blog_summary, posts
 
 def get_blog_by_ID(blog_id):
 
     get_blog_url = 'https://www.googleapis.com/blogger/v3/blogs/' + str(blog_id) + '/posts?key=' + api_key
+
     all_posts = []
 
     while True:
@@ -56,7 +66,7 @@ def get_blog_by_ID(blog_id):
         for post in blog_info['items']:
             post_id = post['id']
             get_post_url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts/%s?key=%s' %(str(blog_id), post_id, api_key)
-            print get_blog_url
+            print get_post_url
             post_detail = get(get_post_url)
             all_posts.append(parse_post(post_detail))
 
