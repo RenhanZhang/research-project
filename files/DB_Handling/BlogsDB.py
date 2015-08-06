@@ -3,14 +3,31 @@ from dateutil import parser
 import calendar
 import ipdb
 debug = True
+import os
 class BlogsDB_Handler:
 
     def __init__(self):
-        self.conn = MySQLdb.connect(host='lit04.eecs.umich.edu',
-                                  user = 'rhzhang',
-                                  passwd = 'zhang647',
-                                  db = 'myblogs')
+        info = self.read_db_setting()
+        self.conn = MySQLdb.connect(host = info['host'],
+                                  user = info['user'],
+                                  passwd = info['passwd'],
+                                  db = info['db_name'])
+        ipdb.set_trace()
         self.cur = self.conn.cursor()
+
+    def read_db_setting(self):
+        '''
+         read host, user, passwd, db name from db_account.txt
+         In the db_account.txt file, the format is [attribute]=[value].
+         for example: host=localhost
+        '''
+        account_info = {}
+        with open('DB_Handling/db_account.txt', 'r') as f:
+            l = f.readlines()
+            for str in l:
+                (attr, val) = str.split('=')
+                account_info[attr] = val.replace('\n', '')
+        return account_info
 
     def batch_update(self, profile, blog, posts):
         print '\n\n-------------------blogs--------------------'
