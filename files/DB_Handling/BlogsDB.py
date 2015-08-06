@@ -100,9 +100,9 @@ class BlogsDB_Handler:
     def update_posts(self, posts):
         for post in posts:
             self.prepare_post(post)
-            stmt = """insert into posts (url, title, content, published, author_url)
-                      values(%s, %s, %s, %s, %s)""" \
-                   %(post['url'], post['title'], post['content'], post['published'], post['author_url'])
+            stmt = 'insert into posts values(%s, %s, %s, %s, %s, %s, %s, %s, %s)' \
+                   %(post['url'], post['title'], post['content'], post['published'], post['author_url'],\
+                     post['location']['lat'], post['location']['lng'], post['location']['name'], post['location']['span'])
             if debug:
                 print stmt
             else:
@@ -117,6 +117,18 @@ class BlogsDB_Handler:
         self.parse_time(post, 'published')
         attr = ['url', 'title', 'content', 'author_url']
         self.prepare_str(post, attr)
+
+        # prepare for location info
+        ''' "location": {
+                "name": "Bundalong VIC 3730, Australia",
+                "lat": -36.0300559,
+                "lng": 146.16002660000004,
+                "span": "0.205405,0.322723"
+             }
+        '''
+        if 'location' not in post:
+            post['location'] = {}
+        self.prepare_str(post['location'], ['name', 'lat', 'lng', 'span'])
 
     def update_blog_posts(self, blog, posts):
         for post in posts:
