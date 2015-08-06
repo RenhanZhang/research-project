@@ -1,9 +1,0 @@
-thee,YOU
-thou,YOU
-thy,YOU
-you,YOU
-you,YOU
-your,YOU
-yours,YOU
-yourself,YOU
-yourselves,YOU

@@ -2,3 +2,4 @@
 .DS_Store
 files/mysite/settings.py 
 files/mysite/urls.py
+files/run.sh

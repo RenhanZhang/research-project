@@ -1,7 +1,0 @@
-disagree,NO
-mean,NO
-nay,NO
-no,NO
-nope,NO
-ugh,NO
-wrong,NO

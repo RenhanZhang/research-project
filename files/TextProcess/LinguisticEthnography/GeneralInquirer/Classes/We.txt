@@ -1,6 +1,0 @@
-let's,WE
-our,WE
-ours,WE
-ourselves,WE
-us,WE
-we,WE
