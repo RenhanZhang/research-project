@@ -1,6 +1,6 @@
 import MySQLdb
 from dateutil import parser
-import time
+import calendar
 import ipdb
 debug = True
 class BlogsDB_Handler:
@@ -164,6 +164,6 @@ class BlogsDB_Handler:
     def parse_time(self, dictionary, attr):
         if attr in dictionary:
             d = parser.parse(dictionary[attr])
-            dictionary[attr] = str(time.mktime(d.utctimetuple()) * 1000)
+            dictionary[attr] = str(calendar.timegm(d.utctimetuple()) * 1000)
         else:
             dictionary[attr] = 'NULL'
