@@ -19,7 +19,7 @@ def scrape_profile(url):
     # But when the request is blocked because of too frequent query to blogger.com,
     # there will be no image_url
     if not scrape_image_url(s, profile):
-        a = 1
+        return None
 
     scrape_blogs_followed(a.text, profile)
     scrape_email(s, profile)

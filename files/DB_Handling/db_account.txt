@@ -1,4 +1,4 @@
 host=lit04.eecs.umich.edu
 user=rhzhang
-passwd=zhang647
+passwd=johnjohn
 db_name=myblogs

@@ -12,7 +12,7 @@ class BlogsDB_Handler:
                                   user = info['user'],
                                   passwd = info['passwd'],
                                   db = info['db_name'])
-        ipdb.set_trace()
+        # ipdb.set_trace()
         self.cur = self.conn.cursor()
 
     def read_db_setting(self):
@@ -34,14 +34,16 @@ class BlogsDB_Handler:
         self.update_blog(blog)
         print '\n\n-------------------posts--------------------'
         self.update_posts(posts)
-        print '\n\n-------------------profiles--------------------'
-        self.update_profile(profile)
         print '\n\n-------------------blogs_posts--------------------'
         self.update_blog_posts(blog, posts)
-        print '\n\n-------------------profiles_blog--------------------'
-        self.update_profile_blogs(profile, blog)
-        print '\n\n-------------------profiles_blogs_followed--------------------'
-        self.update_profile_blogs_followed(profile)
+
+        if profile:
+            print '\n\n-------------------profiles--------------------'
+            self.update_profile(profile)
+            print '\n\n-------------------profiles_blog--------------------'
+            self.update_profile_blogs(profile, blog)
+            print '\n\n-------------------profiles_blogs_followed--------------------'
+            self.update_profile_blogs_followed(profile)
 
     def update_blog(self, blog):
         self.prepare_blog(blog)

@@ -10,6 +10,7 @@ import StringIO
 import urllib, base64
 import uuid
 import re, os, errno
+from wordcloud import WordCloud
 def words_vs_time(posts, freq_words=[]):
     '''
     :param posts: a list of posts
@@ -72,17 +73,19 @@ def words_vs_time(posts, freq_words=[]):
 
     imgdata = StringIO.StringIO()
     fig.savefig(imgdata, format='png')
-    print "Content-Type: image/png\n"
+    # print "Content-Type: image/png\n"
     imgdata.seek(0)  # rewind the data
-
+    plt.close()
     uri = urllib.quote(base64.b64encode(imgdata.buf))
     return uri
 
 def ling_ethnography(posts):
     dict_fname = 'LinguisticEthnography/GeneralInquirer/GeneralInquirer.all.txt'
-    class_scores = []  # store the dominance score of semantic classes of every post
+    class_scores = {}  # store the dominance score of semantic classes of every post
 
     for post in posts:
+        if len(post['content']) < 100:
+            continue
         temp_id = str(uuid.uuid4())
         result_fname = 'result_%s.txt' %temp_id
         post_fname = 'post_%s.txt' %temp_id
@@ -108,7 +111,7 @@ def ling_ethnography(posts):
 
             class_score = sorted(class_score, key=lambda x:x[1])
 
-        class_scores.append(class_score)
+        class_scores[post['title']] = class_score
 
         # remove these temp file
         silentremove(result_fname)
@@ -122,3 +125,20 @@ def silentremove(filename):
     except OSError as e: # this would be "except OSError, e:" before Python 2.6
         if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
             raise # re-raise exception if a different error occured
+
+def word_cloud(posts):
+    text = ' '.join(post['content'] + ' ' + post['title'] for post in posts)
+    wordcloud = WordCloud(background_color="white", max_words=2000)
+    wordcloud.generate(text)
+    fig = plt.gcf()
+    # fig.set_size_inches(15, 8.5)
+    # Open a plot of the generated image.
+    plt.imshow(wordcloud)
+    plt.axis("off")
+
+    imgdata = StringIO.StringIO()
+    fig.savefig(imgdata, format='png')
+    imgdata.seek(0)  # rewind the data
+    plt.close()
+    uri = urllib.quote(base64.b64encode(imgdata.buf))
+    return uri

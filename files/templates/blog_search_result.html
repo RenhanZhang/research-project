@@ -6,8 +6,8 @@
     <h1>You searched for blog {{ blog_name }}</h1>
 
     <h2>Word Frequency v.s. Time</h2>
-    <img height="600" width="900" alt="embedded" src="data:image/png;base64,{{inline_png}}"/>
-    
+    <img height="600" width="900" alt="embedded" src="data:image/png;base64,{{wf_vs_time}}"/>
+    <img height="400" width="600" alt="embedded" src="data:image/png;base64,{{word_cloud}}"/>
     <h2>Below are the contents of some of the posts</h2>
     {% for post in posts %}
         <p>{{ post.content }}</p>
