@@ -24,6 +24,6 @@ def search_blog_by_link(request):
 
     wvt_uri = visualize.words_vs_time(posts)
     wc_uri = visualize.word_cloud(posts)
-    ctx = Context({'posts': posts, 'blog_name': blog['name'], 'wf_vs_time': wvt_uri, 'word_cloud':wc_uri})
+    ctx = Context({'posts': posts, 'blog_name': blog['name'].replace("\'", ''), 'wf_vs_time': wvt_uri, 'word_cloud':wc_uri})
     return render(request, 'blog_search_result.html', ctx)
     #return render_to_response('blog_search_result.html', {'posts': posts, 'blog_name': blog['name']},
