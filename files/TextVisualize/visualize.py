@@ -4,11 +4,12 @@ from datetime import datetime, timedelta
 from TextProcess import preprocess
 import operator
 from matplotlib import pyplot as plt
-
+import subprocess
 import ipdb
 import StringIO
 import urllib, base64
-
+import uuid
+import re, os, errno
 def words_vs_time(posts, freq_words=[]):
     '''
     :param posts: a list of posts
@@ -76,3 +77,48 @@ def words_vs_time(posts, freq_words=[]):
 
     uri = urllib.quote(base64.b64encode(imgdata.buf))
     return uri
+
+def ling_ethnography(posts):
+    dict_fname = 'LinguisticEthnography/GeneralInquirer/GeneralInquirer.all.txt'
+    class_scores = []  # store the dominance score of semantic classes of every post
+
+    for post in posts:
+        temp_id = str(uuid.uuid4())
+        result_fname = 'result_%s.txt' %temp_id
+        post_fname = 'post_%s.txt' %temp_id
+        with open(post_fname, 'wb') as f:
+            f.write(post['content'])
+        with open(result_fname, 'wb') as f:
+            # use the package and output the result to file result_temp_id.txt
+            cmd = "perl LinguisticEthnography/EthnolingClasses.pl -fg %s -bg bg_corpus.txt -dict %s >%s" %(post_fname, dict_fname, result_fname)
+            print cmd
+            subprocess.call(cmd, shell=True)
+
+        # load the results
+        class_score = []
+        with open(result_fname, 'rb') as f:
+
+            for line in f.readlines():
+                pattern = '(\w+)\s(\d+\.\d+)'
+                match = re.search(pattern, line)
+                if match:
+                    class_name = match.group(1)
+                    score = float(match.group(2))
+                    class_score.append((class_name, score))
+
+            class_score = sorted(class_score, key=lambda x:x[1])
+
+        class_scores.append(class_score)
+
+        # remove these temp file
+        silentremove(result_fname)
+        silentremove(post_fname)
+
+    return class_scores
+
+def silentremove(filename):
+    try:
+        os.remove(filename)
+    except OSError as e: # this would be "except OSError, e:" before Python 2.6
+        if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
+            raise # re-raise exception if a different error occured

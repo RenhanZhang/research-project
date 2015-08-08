@@ -1,0 +1,8 @@
+i,SELF
+i'm,SELF
+me,SELF
+mine,SELF
+my,SELF
+myself,SELF
+">myself>,SELF
+oneself,SELF

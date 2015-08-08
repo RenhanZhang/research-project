@@ -1,0 +1,15 @@
+black,RACIAL
+color,RACIAL
+desegregation,RACIAL
+discrimination,RACIAL
+ethnic,RACIAL
+indian,RACIAL
+jew,RACIAL
+native,RACIAL
+negro,RACIAL
+nigger,RACIAL
+prejudice,RACIAL
+race,RACIAL
+racial,RACIAL
+segregation,RACIAL
+white,RACIAL
