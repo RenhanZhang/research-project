@@ -128,7 +128,7 @@ def silentremove(filename):
 
 def word_cloud(posts):
     text = ' '.join(post['content'] + ' ' + post['title'] for post in posts)
-    wordcloud = WordCloud(background_color="white", max_words=2000, width=1200, height=900)
+    wordcloud = WordCloud(background_color="white", width=1200, height=900, margin=0)
     wordcloud.generate(text)
     fig = plt.gcf()
     # fig.set_size_inches(15, 8.5)
@@ -137,7 +137,7 @@ def word_cloud(posts):
     plt.axis("off")
 
     imgdata = StringIO.StringIO()
-    fig.savefig(imgdata, format='png')
+    fig.savefig(imgdata, format='png', bbox_inches='tight')
     imgdata.seek(0)  # rewind the data
     plt.close()
     uri = urllib.quote(base64.b64encode(imgdata.buf))

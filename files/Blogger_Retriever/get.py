@@ -3,10 +3,17 @@ from bs4 import BeautifulSoup
 import re
 import ipdb
 import profile_scraper
-
 MAX_POSTS = 10
 api_key = 'AIzaSyAsO-ID5sIxbtvc59ir5v2xbVxZTA02VDo'
 
+
+def rm_special_char(s):
+     
+    special_char = [(u"\u2018", "'"), (u"\u2019", "'"), (u'\u201c', '"'),
+                    (u'\u201d', '"'), (u"\u2014", '-'), (u'\u02bb', "'")]
+    for u, v in special_char:
+        s = s.replace(u, v)
+    return s
 
 def parse_post(post):
     # extract year-month-day
@@ -15,17 +22,10 @@ def parse_post(post):
     post['pub_year'] = int(year)
     post['pub_month'] = int(month)
     post['pub_day'] = int(day)
-
     # use beautiful soup to parse the content
     #ipdb.set_trace()
     soup = BeautifulSoup(post['content'])
     post['content'] = soup.get_text()
-
-    '''
-    # get author_id and the name
-    post['author_id'] = post['author']['id']
-    post['author_display_name'] = post['author']['displayName']
-    '''
 
     return post
 

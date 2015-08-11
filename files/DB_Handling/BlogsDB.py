@@ -2,7 +2,7 @@ import MySQLdb
 from dateutil import parser
 import calendar
 import ipdb
-debug = True
+debug = False
 import os
 from copy import deepcopy
 class BlogsDB_Handler:
@@ -12,7 +12,8 @@ class BlogsDB_Handler:
         self.conn = MySQLdb.connect(host = info['host'],
                                   user = info['user'],
                                   passwd = info['passwd'],
-                                  db = info['db_name'])
+                                  db = info['db_name'],
+                                  charset='utf8')
         # ipdb.set_trace()
         self.cur = self.conn.cursor()
 
@@ -23,7 +24,7 @@ class BlogsDB_Handler:
          for example: host=localhost
         '''
         account_info = {}
-        with open('DB_Handling/db_account.txt', 'r') as f:
+        with open(os.path.dirname(os.path.abspath(__file__))+'/db_account.txt', 'r') as f:
             l = f.readlines()
             for str in l:
                 (attr, val) = str.split('=')
@@ -51,7 +52,7 @@ class BlogsDB_Handler:
 
     def update_blog(self, blog):
         self.prepare_blog(blog)
-        stmt = 'insert into blogs values (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;' \
+        stmt = u'insert into blogs values (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;' \
                %(blog['url'], blog['description'], blog['name'], blog['published'],\
                  blog['updated'], blog['locale']['country'], blog['locale']['language'],\
                  blog['locale']['variant'])
@@ -79,7 +80,7 @@ class BlogsDB_Handler:
     def update_posts(self, posts):
         for post in posts:
             self.prepare_post(post)
-            stmt = 'insert into posts values(%s, %s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;' \
+            stmt = u'insert into posts values(%s, %s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;' \
                    %(post['url'], post['title'], post['content'], post['published'], post['author_url'],\
                      post['location']['lat'], post['location']['lng'], post['location']['name'], post['location']['span'])
             if debug:
@@ -115,7 +116,7 @@ class BlogsDB_Handler:
         if self.cur.execute('select * from blogs where url=%s' %p['url']):
             return
         # ipdb.set_trace()
-        stmt = 'insert into profiles values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;'\
+        stmt = u'insert into profiles values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;'\
                 %(p['url'], p['gender'], p['industry'], p['occupation'], p['city'],\
                   p['state'], p['country'], p['introduction'], p['interests'], p['movies'],\
                   p['music'], p['books'], p['name'], p['image_url'], p['email'], p['web_page_url'],\
@@ -139,7 +140,7 @@ class BlogsDB_Handler:
 
     def update_blog_posts(self, blog, posts):
         for post in posts:
-            stmt = 'insert into blogs_posts values (%s, %s) on duplicate key update;' %(blog['url'], post['url'])
+            stmt = u'insert into blogs_posts values (%s, %s) on duplicate key update;' %(blog['url'], post['url'])
             if debug:
                 print stmt
             else:
@@ -147,7 +148,7 @@ class BlogsDB_Handler:
 
     def update_profile_blogs(self, profile, blog):
 
-        stmt = 'insert into profiles_blogs values (%s, %s) on duplicate key update;' %(profile['url'], blog['url'])
+        stmt = u'insert into profiles_blogs values (%s, %s) on duplicate key update;' %(profile['url'], blog['url'])
         if debug:
             print stmt
         else:
@@ -155,7 +156,7 @@ class BlogsDB_Handler:
 
     def update_profile_blogs_followed(self, profile):
         for blog_url in profile['blogs_following']:
-            stmt = 'insert into profiles_blogs_followed values (%s, %s) on duplicate update;' %(profile['url'], '\''+blog_url+'\'')
+            stmt = u'insert into profiles_blogs_followed values (%s, %s) on duplicate update;' %(profile['url'], '\''+blog_url+'\'')
             if debug:
                 print stmt
             else:

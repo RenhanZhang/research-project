@@ -25,9 +25,9 @@ import settings
 
 urlpatterns = patterns('',
     #url(r'^admin/', include(admin.site.urls)),
-    #url(r'^hello/$', hello),
     url(r'^$', views.home),
-    url(r'^~rhzhang/search_blog/', search_views.search_blog_by_link),
+    #url(r'^~rhzhang/search_blog/', search_views.search_blog_by_link),
+    url(r'search_blog/', search_views.search_blog_by_link),
 
     (r'^media/(?P<path>.*)$', 'django.views.static.serve',
                  {'document_root': settings.MEDIA_ROOT}),

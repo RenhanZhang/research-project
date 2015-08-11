@@ -75,14 +75,19 @@ def rm_stopwords(s):
         sw = f.readlines()
     sw = [re.sub('[\n\s]', '', x) for x in sw]
     return ' '.join([w for w in s.split() if w.lower() not in sw])
-def preprocess(s):
 
+def rm_special_char(s):
+     
+    special_char = [(u"\u2018", "'"), (u"\u2019", "'"), (u'\u201c', '"'),
+                    (u'\u201d', '"'), (u"\u2014", '-'), (u'\u02bb', "'")]
     for u, v in special_char:
         s = s.replace(u, v)
+    return s
 
-    #s.decode('unicode_escape').encode('ascii','ignore')
 
-    #s = str(s)
+def preprocess(s):
+
+    s = rm_special_char(s)
     s = rm_space(s)
     s = rm_stopwords(s)
     l = tokenizeText(s)
@@ -91,5 +96,3 @@ def preprocess(s):
         word_count_dict[word] = word_count_dict.get(word, 0) + 1
     return word_count_dict
 
-special_char = [(u"\u2018", "'"), (u"\u2019", "'"), (u'\u201c', '"'),
-                (u'\u201d', '"'), (u"\u2014", '-'), (u'\u02bb', "'")]
