@@ -4,6 +4,7 @@ import calendar
 import ipdb
 debug = True
 import os
+from copy import deepcopy
 class BlogsDB_Handler:
 
     def __init__(self):
@@ -30,6 +31,9 @@ class BlogsDB_Handler:
         return account_info
 
     def batch_update(self, profile, blog, posts):
+        profile = deepcopy(profile)
+        blog = deepcopy(blog)
+        posts = deepcopy(posts)
         print '\n\n-------------------blogs--------------------'
         self.update_blog(blog)
         print '\n\n-------------------posts--------------------'

@@ -122,13 +122,6 @@ def scrape_blogs_followed(html, profile):
 
 
 
-
-
-
-
-
-
-
 '''
 p = scrape_profile('https://www.blogger.com/profile/00053106429388237359')
 print sorted(p.keys())

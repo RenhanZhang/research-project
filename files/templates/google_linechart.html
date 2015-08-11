@@ -1,11 +1,5 @@
 <html>
-<head>
-    <title>Search a blog</title>
-</head>
-<body>
-    <h1>You searched for blog {{ blog_name }}</h1>
-
-    <h2>Word Frequency v.s. Time</h2>
+  <head>
     <script type="text/javascript"
           src="https://www.google.com/jsapi?autoload={
             'modules':[{
@@ -20,7 +14,7 @@
 
       function drawChart() {
         var data = google.visualization.arrayToDataTable([
-        {{table}}
+        $table_data
         ]);
 
         var options = {
@@ -34,12 +28,8 @@
         chart.draw(data, options);
       }
     </script>
-    <img height="400" width="600" alt="embedded" src="data:image/png;base64,{{wf_vs_time}}"/>
-    <img height="400" width="600" alt="embedded" src="data:image/png;base64,{{word_cloud}}"/>
-    <h2>Below are the contents of some of the posts</h2>
-    {% for post in posts %}
-        <p>{{ post.content }}</p>
-    {% endfor %}
-
-</body>
+  </head>
+  <body>
+    <div id="curve_chart" style="width: 900px; height: 500px"></div>
+  </body>
 </html>
