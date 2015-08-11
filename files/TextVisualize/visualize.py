@@ -128,7 +128,7 @@ def silentremove(filename):
 
 def word_cloud(posts):
     text = ' '.join(post['content'] + ' ' + post['title'] for post in posts)
-    wordcloud = WordCloud(background_color="white", max_words=2000)
+    wordcloud = WordCloud(background_color="white", max_words=2000, width=1200, height=900)
     wordcloud.generate(text)
     fig = plt.gcf()
     # fig.set_size_inches(15, 8.5)
@@ -181,14 +181,14 @@ def words_vs_time_beta(posts, freq_words=[]):
 
     dates = sorted(post_dict.keys())
 
-    ipdb.set_trace()
+    #ipdb.set_trace()
     table = u"['Date'"
     for word in freq_words:
         table += u", '%s'" %word
     table += u']'
 
     for date in dates:
-        s = u",\n        '{year}-{month}-{day}'".format(year=date.year, month=date.month, day=date.day)
+        s = u",\n        ['{year}-{month}-{day}'".format(year=date.year, month=date.month, day=date.day)
         for word in freq_words:
             s += u', %s' %post_dict[date].get(word, 0)
         s += u']'
