@@ -11,6 +11,9 @@ import urllib, base64
 import uuid
 import re, os, errno
 from wordcloud import WordCloud
+
+dirname = os.path.dirname(os.path.abspath(__file__))
+
 def words_vs_time(posts, freq_words=[]):
     '''
     :param posts: a list of posts
@@ -80,7 +83,7 @@ def words_vs_time(posts, freq_words=[]):
     return uri
 
 def ling_ethnography(posts):
-    dict_fname = 'LinguisticEthnography/GeneralInquirer/GeneralInquirer.all.txt'
+    dict_fname = dir_name + 'LinguisticEthnography/LIWC/LIWC.all.txt'
     class_scores = {}  # store the dominance score of semantic classes of every post
 
     for post in posts:
