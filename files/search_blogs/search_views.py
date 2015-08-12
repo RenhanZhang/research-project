@@ -61,7 +61,8 @@ def search_blog_by_link(request):
 
     templ_str = templ_str.replace('$wf_vs_time_table', table)
 
-    ctx = Context({'table':table, 'posts': posts, 'blog_name': blog['name'].replace("\'", ''), 'wf_vs_time': wvt_uri, 'word_cloud':wc_uri})
+    ctx = Context({'table':table, 'posts': posts, 'blog_name': blog['name'].replace("\'", ''),\
+                   'wf_vs_time': wvt_uri, 'word_cloud':wc_uri, 'le_classes':le_classes})
 
     templ = Template(templ_str)
     html = templ.render(ctx)

@@ -1,0 +1,68 @@
+relig:religion
+money:money
+pronoun:total pronouns
+funct:total function words
+feel:feel
+certain:certainty
+insight:insight
+assent:assent
+number:numbers
+sad:sadness
+past:past tense
+anger:anger
+see:see
+human:humans
+affect:affective processes
+negate:negations
+home:home
+conj:conjunctions
+anx:anxiety
+negemo:negative emotion
+ppron:personal pronouns
+sexual:sexual
+inhib:inhibition
+bio:biological processes
+family:family
+adverb:adverbs
+space:space
+filler:fillers
+ipron:impersonal pronouns
+sixltr:words>6 letters
+percept:perceptual processes
+swear:swear words
+quant:quantifiers
+discrep:discrepancy
+relativ:relativity
+health:health
+you:2nd person
+cause:causation
+prep:prepositions
+friend:friends
+body:body
+cogmech:cognitive processes
+we:1st pers plural
+wc:word count
+time:time
+leisure:leisure
+wps:words/sentence
+verb:common verbs
+hear:hear
+they:3rd pers plural
+article:articles
+excl:exclusive
+nonflu:nonfluencies
+present:present tense
+tentat:tentative
+death:death
+i:1st pers singular
+posemo:positive emotion
+work:work
+ingest:ingestion
+dic:dictionary words
+motion:motion
+future:future tense
+achieve:achievement
+social:social processes
+auxverb:auxiliary verbs
+incl:inclusive
+shehe:3rd pers singular

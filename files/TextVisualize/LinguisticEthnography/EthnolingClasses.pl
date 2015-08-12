@@ -26,7 +26,7 @@
 # 10-21-2011    Rada            code revised for added flexibility 
 # 10-20-2009    Rada            initial version
 # =======================================================================
-use lib '/Users/rhzhang/Desktop/LinguisticEthnography';
+use lib '/Users/rhzhang/Desktop/research-project/files/TextVisualize/LinguisticEthnography';
 
 use Getopt::Long;
 use tokenizeE;

@@ -9,7 +9,7 @@ import ipdb
 import StringIO
 import urllib, base64
 import uuid
-import re, os, errno
+import re, os, errno, codecs
 from wordcloud import WordCloud
 
 dirname = os.path.dirname(os.path.abspath(__file__))
@@ -83,24 +83,28 @@ def words_vs_time(posts, freq_words=[]):
     return uri
 
 def ling_ethnography(posts):
-    
+    package_dir = dirname + '/LinguisticEthnography/'
     N = 5
-    dict_fname = dir_name + '/LinguisticEthnography/LIWC/LIWC.all.txt'
-    
-    contents = u' '.join([(post['content'] + ' ' + post['title']) for post in posts])
+    dict_fname = package_dir + 'LIWC/LIWC.all.txt'
+
+    contents = ' '.join([(post['content'] + ' ' + post['title']) for post in posts])
     
     temp_id = str(uuid.uuid4())
-    result_fname = dir_name + '/result_%s.txt' %temp_id
-    contents_fname = dir_name + '/contents_%s.txt' %temp_id
-    with open(contents_fname, 'wb') as f:
+    result_fname = dirname + '/result_%s.txt' %temp_id
+    contents_fname = dirname + '/contents_%s.txt' %temp_id
+    with codecs.open(contents_fname, 'wb', encoding='utf8') as f:
         f.write(contents)
-    
-    cmd = "perl %s/LinguisticEthnography/EthnolingClasses.pl -fg %s -bg bg_corpus.txt -dict %s >%s" %(dir_name, contents_fname, dict_fname, result_fname)
+
+    cmd = "perl {EthnolingClasses} -fg {fg} -bg {bg} -dict {dict} >{result}"\
+              .format(EthnolingClasses=package_dir+'EthnolingClasses.pl', fg=contents_fname, bg=package_dir+'bg_corpus.txt',\
+                      dict=dict_fname, result=result_fname)
+
+
     subprocess.call(cmd, shell=True)
 
     # load the results
     class_score = []
-    with open(result_fname, 'rb') as f:
+    with codecs.open(result_fname, 'rb', encoding='utf8') as f:
         for line in f.readlines():
             pattern = '(\w+)\s(\d+\.\d+)'
             match = re.search(pattern, line)
@@ -109,27 +113,34 @@ def ling_ethnography(posts):
                 score = float(match.group(2))
                 class_score.append((class_name, score))
 
+    # ipdb.set_trace()
     # sort class_score and take the top N classes
-    class_score = sorted(class_score, key=lambda x:x[1], reverse=True)[:N]
+    class_score = sorted(class_score, key=lambda x:x[1], reverse=True)
 
     # remove these temp file
     silentremove(result_fname)
-    silentremove(post_fname)
+    silentremove(contents_fname)
 
     # make sense of the class
 
     # load the class explanation file into a dictionary
     dic = {}
-    with open(dir_name + '/liwc_exp.txt', 'r') as f:
+    with codecs.open(package_dir+'LIWC/liwc_exp.txt', 'r') as f:
         for line in f.readlines():
             l = line.split(':')
-            dic[l[0]] = l[1].rstrip()
+            dic[l[0].lower()] = l[1].rstrip()
 
-    result = [dic[key] for key, val in class_score]
+    result = []
+    count = 0
+    for cls, score in class_score:
+        if count > N:
+            break
+        if cls.lower() in dic:
+            count += 1
+            result.append(dic[cls.lower()].lower())
 
     return result
-         
-    return class_scores
+
 
 def silentremove(filename):
     try:
