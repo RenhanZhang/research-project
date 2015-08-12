@@ -83,43 +83,52 @@ def words_vs_time(posts, freq_words=[]):
     return uri
 
 def ling_ethnography(posts):
-    dict_fname = dir_name + 'LinguisticEthnography/LIWC/LIWC.all.txt'
-    class_scores = {}  # store the dominance score of semantic classes of every post
+    
+    N = 5
+    dict_fname = dir_name + '/LinguisticEthnography/LIWC/LIWC.all.txt'
+    
+    contents = u' '.join([(post['content'] + ' ' + post['title']) for post in posts])
+    
+    temp_id = str(uuid.uuid4())
+    result_fname = dir_name + '/result_%s.txt' %temp_id
+    contents_fname = dir_name + '/contents_%s.txt' %temp_id
+    with open(contents_fname, 'wb') as f:
+        f.write(contents)
+    
+    cmd = "perl %s/LinguisticEthnography/EthnolingClasses.pl -fg %s -bg bg_corpus.txt -dict %s >%s" %(dir_name, contents_fname, dict_fname, result_fname)
+    subprocess.call(cmd, shell=True)
 
-    for post in posts:
-        if len(post['content']) < 100:
-            continue
-        temp_id = str(uuid.uuid4())
-        result_fname = 'result_%s.txt' %temp_id
-        post_fname = 'post_%s.txt' %temp_id
-        with open(post_fname, 'wb') as f:
-            f.write(post['content'])
-        with open(result_fname, 'wb') as f:
-            # use the package and output the result to file result_temp_id.txt
-            cmd = "perl LinguisticEthnography/EthnolingClasses.pl -fg %s -bg bg_corpus.txt -dict %s >%s" %(post_fname, dict_fname, result_fname)
-            print cmd
-            subprocess.call(cmd, shell=True)
+    # load the results
+    class_score = []
+    with open(result_fname, 'rb') as f:
+        for line in f.readlines():
+            pattern = '(\w+)\s(\d+\.\d+)'
+            match = re.search(pattern, line)
+            if match:
+                class_name = match.group(1)
+                score = float(match.group(2))
+                class_score.append((class_name, score))
 
-        # load the results
-        class_score = []
-        with open(result_fname, 'rb') as f:
+    # sort class_score and take the top N classes
+    class_score = sorted(class_score, key=lambda x:x[1], reverse=True)[:N]
 
-            for line in f.readlines():
-                pattern = '(\w+)\s(\d+\.\d+)'
-                match = re.search(pattern, line)
-                if match:
-                    class_name = match.group(1)
-                    score = float(match.group(2))
-                    class_score.append((class_name, score))
+    # remove these temp file
+    silentremove(result_fname)
+    silentremove(post_fname)
 
-            class_score = sorted(class_score, key=lambda x:x[1])
+    # make sense of the class
 
-        class_scores[post['title']] = class_score
+    # load the class explanation file into a dictionary
+    dic = {}
+    with open(dir_name + '/liwc_exp.txt', 'r') as f:
+        for line in f.readlines():
+            l = line.split(':')
+            dic[l[0]] = l[1].rstrip()
 
-        # remove these temp file
-        silentremove(result_fname)
-        silentremove(post_fname)
+    result = [dic[key] for key, val in class_score]
 
+    return result
+         
     return class_scores
 
 def silentremove(filename):

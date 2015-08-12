@@ -54,6 +54,8 @@ def search_blog_by_link(request):
     wvt_uri = visualize.words_vs_time(posts)
     wc_uri = visualize.word_cloud(posts)
     table = visualize.words_vs_time_beta(posts)
+    
+    le_classes = visualize.ling_ethnography(posts)
     with open(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/templates/blog_search_result.html', 'r') as f:
         templ_str = f.read()
 
