@@ -2,7 +2,7 @@ import MySQLdb
 from dateutil import parser
 import calendar
 import ipdb
-DEBUG = False
+DEBUG = True
 EXEC = True
 import os
 from copy import deepcopy

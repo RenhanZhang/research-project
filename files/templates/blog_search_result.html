@@ -1,9 +1,10 @@
 <html>
 <head>
     <title>Search a blog</title>
+
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
-      google.load("visualization", "1.1", {packages:["bar"]});
+      google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
         var data = google.visualization.arrayToDataTable([
@@ -11,21 +12,24 @@
         ]);
 
         var options = {
-          chart: {
-            title: 'Top 5 Words in Your Recent Posts',
-            subtitle: 'Word Frequency versus Time',
-          }
+          title: 'Most Common Words in Your Recent Posts',
+          subtitle: 'Word Frequency versus Time',
+          hAxis: {titleTextStyle: {color: '#333'}},
+          vAxis: {minValue: 0},
+          isStacked: true,
+          height: 600,
+          legend: {position: 'top', maxLines: 3},
         };
 
-        var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
-
+        var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
         chart.draw(data, options);
       }
     </script>
 </head>
 <body>
     <h1>You searched blog {{blog_name}}</h1>
-    <div id="columnchart_material" style="width: 900px; height: 500px;"></div>
+    <!--div id="columnchart_material" style="width: 900px; height: 500px;"></div-->
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
     <br><br><br>
     <img height="600" width="800" alt="embedded" src="data:image/png;base64,{{word_cloud}}"/>
 

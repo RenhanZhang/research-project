@@ -84,5 +84,5 @@ def get_blog_by_ID(blog_id):
 
     return all_posts
 
-a = get_blog_by_link('http://d2r-travel.blogspot.com/')
+#a = get_blog_by_link('http://d2r-travel.blogspot.com/')
 #get_blog_byID(2399953)
