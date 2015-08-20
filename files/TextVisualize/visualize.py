@@ -11,8 +11,11 @@ import urllib, base64
 import uuid
 import re, os, errno, codecs
 from wordcloud import WordCloud
+import json
+from time import mktime
 
 dirname = os.path.dirname(os.path.abspath(__file__))
+
 
 def words_vs_time(posts, freq_words=[]):
     '''
@@ -174,7 +177,7 @@ def words_vs_time_beta(posts, freq_words=[]):
     :return:
     '''
 
-    post_dict = {}  # key: datetime object, val: word count dict of the content of the blog
+    post_dict = {}  # key: datetime object, val: word count dict of the content of the post
     freq_words_provided = len(freq_words) > 0
     global_word_count = {}   # the word frequency across the collections
     # ipdb.set_trace()
@@ -204,6 +207,7 @@ def words_vs_time_beta(posts, freq_words=[]):
 
     dates = sorted(post_dict.keys())
 
+    '''
     #ipdb.set_trace()
     table = u"['Date'"
     for word in freq_words:
@@ -217,8 +221,21 @@ def words_vs_time_beta(posts, freq_words=[]):
         s += u']'
 
         table += s
+    '''
 
-    return table
+
+    header = ['Date']
+    header.extend(freq_words)
+    table = [header]
+
+    for date in dates:
+        row = [str(date)]
+        for word in freq_words:
+            row.append(post_dict[date].get(word, 0))
+        table.append(row)
+
+
+    return json.dumps(table)
 
 
 
