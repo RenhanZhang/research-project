@@ -229,7 +229,7 @@ def words_vs_time_beta(posts, freq_words=[]):
     table = [header]
 
     for date in dates:
-        row = [str(date)]
+        row = ['%s-%s-%s'%(date.year, date.month, date.day)]
         for word in freq_words:
             row.append(post_dict[date].get(word, 0))
         table.append(row)

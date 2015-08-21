@@ -1,49 +1,109 @@
 <html>
 <head>
     <title>Search a blog</title>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawChart);
-      function drawChart() {
-        var data = google.visualization.arrayToDataTable(
-        {{wf_vs_time|safe}}
-        );
+    $(document).ready(function(){
+      google.load("visualization", "1", {'packages':["corechart"], 'callback':googleLoaded});
+      //google.setOnLoadCallback(drawChart);
+      
+      function googleLoaded(){
+        var prevButton = document.getElementById('b1');
+        var nextButton = document.getElementById('b2');
+        var changeZoomButton = document.getElementById('b3');
 
+        var table = {{wf_vs_time|safe}}
+        var MAX=10;
         var options = {
-          title: 'Most Common Words in Your Recent Posts',
-          subtitle: 'Word Frequency versus Time',
-          hAxis: {titleTextStyle: {color: '#333'}},
-          vAxis: {minValue: 0},
-          isStacked: true,
-          height: 600,
-          legend: {position: 'top', maxLines: 3},
+            title: 'Most Common Words in Your Recent Posts',
+            subtitle: 'Word Frequency versus Time',
+            hAxis: {titleTextStyle: {color: '#333'}, viewWindow:{}},
+            vAxis: {minValue: 0},
+            isStacked: true,
+            height: 600,
+            legend: {position: 'top', maxLines: 3},
+            chartArea: {'width': '90%', 'height': '80%'},
+            //animation: {
+              //duration: 1000,
+              //easing: 'linear',
+              //startup:true
+            //},
+            
         };
 
-        var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
-        chart.draw(data, options);
+        
+        function drawChart() {
+
+          var data = google.visualization.arrayToDataTable(table);
+          var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+          //var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+          prevButton.disabled = true;
+          nextButton.disabled = true;
+          changeZoomButton.disabled = true;
+          google.visualization.events.addListener(chart, 'ready',
+              function() {
+                prevButton.disabled = options.hAxis.viewWindow.min <= 0;
+                nextButton.disabled = options.hAxis.viewWindow.max >= MAX;
+                changeZoomButton.disabled = false;
+              });
+          chart.draw(data, options);
+        }
+        
+        prevButton.onclick = function() {
+          options.hAxis.viewWindow.min -= 1;
+          options.hAxis.viewWindow.max -= 1;
+          drawChart();
+        }
+
+        nextButton.onclick = function() {
+          options.hAxis.viewWindow.min += 1;
+          options.hAxis.viewWindow.max += 1;
+          drawChart();
+        }
+
+        var zoomed = false;
+
+        changeZoomButton.onclick = function() {
+          if (zoomed) {
+            //options.hAxis.viewWindow.min = 0;
+            //options.hAxis.viewWindow.max = 5;
+            options.hAxis.viewWindow = {}
+          } else {
+            options.hAxis.viewWindow.min = table.length - 10;
+            options.hAxis.viewWindow.max = table.length;
+            //options.hAxis.viewWindow = {}
+          }
+          zoomed = !zoomed;
+          drawChart();
+        }
+        
+        drawChart();
       }
+    });
+      
     </script>
 </head>
 <body>
-    <h1>You searched blog {{blog_name}}</h1>
-    <!--div id="columnchart_material" style="width: 900px; height: 500px;"></div-->
-    <div id="chart_div" style="width: 900px; height: 500px;"></div>
-    <br><br><br>
+<h1>You searched blog {{blog_name}}</h1>
+      <div id="chart_div" style="width: 900px; height: 500px;"></div>
+
+      <br><br><br><br><br>
+
+      <button type="button" id="b1" style="right: -350px; position: relative; font-size:14pt;">Earlier</button>
+      <button type="button" id="b2" style="right: -350px; position: relative; font-size:14pt">More recent</button>
+      <button type="button" id="b3" style="right: -350px; position: relative; font-size:14pt">Change Zoom</button>
+
+
+        <!--div id="columnchart_material" style="width: 900px; height: 500px;"></div-->
+
+    <br><br><br><br><br><br><br>
     <img height="600" width="800" alt="embedded" src="data:image/png;base64,{{word_cloud}}"/>
 
     <h2>Most dominating word classes found in {{blog_name}}:</h2>
     {% for class in le_classes %}
         <h3>{{ class }}</h3>
     {% endfor %}
-    <!--img height="400" width="600" alt="embedded" src="data:image/png;base64,{{wf_vs_time}}"/-->
-    <h2>Below are the contents of some of the posts</h2>
-    {% for post in posts %}
-        <p>{{ post.content }}</p>
-    {% endfor %}
-
-
-
+            
 </body>
 </html>
