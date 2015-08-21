@@ -12,6 +12,7 @@
         var prevButton = document.getElementById('b1');
         var nextButton = document.getElementById('b2');
         var changeZoomButton = document.getElementById('b3');
+        var zoomed = false;
 
         var table = {{wf_vs_time|safe}}
         var MAX=10;
@@ -31,8 +32,6 @@
             //},
             
         };
-
-        
         function drawChart() {
 
           var data = google.visualization.arrayToDataTable(table);
@@ -43,8 +42,8 @@
           changeZoomButton.disabled = true;
           google.visualization.events.addListener(chart, 'ready',
               function() {
-                prevButton.disabled = options.hAxis.viewWindow.min <= 0;
-                nextButton.disabled = options.hAxis.viewWindow.max >= MAX;
+                prevButton.disabled = options.hAxis.viewWindow.min <= 0 || !zoomed;
+                nextButton.disabled = options.hAxis.viewWindow.max >= table.length || !zoomed;
                 changeZoomButton.disabled = false;
               });
           chart.draw(data, options);
@@ -62,15 +61,15 @@
           drawChart();
         }
 
-        var zoomed = false;
-
+        
+        var span = Math.min(20, table.length/4);
         changeZoomButton.onclick = function() {
           if (zoomed) {
             //options.hAxis.viewWindow.min = 0;
             //options.hAxis.viewWindow.max = 5;
             options.hAxis.viewWindow = {}
           } else {
-            options.hAxis.viewWindow.min = table.length - 10;
+            options.hAxis.viewWindow.min = table.length - span;
             options.hAxis.viewWindow.max = table.length;
             //options.hAxis.viewWindow = {}
           }
@@ -86,18 +85,13 @@
 </head>
 <body>
 <h1>You searched blog {{blog_name}}</h1>
-      <div id="chart_div" style="width: 900px; height: 500px;"></div>
-
-      <br><br><br><br><br>
-
-      <button type="button" id="b1" style="right: -350px; position: relative; font-size:14pt;">Earlier</button>
-      <button type="button" id="b2" style="right: -350px; position: relative; font-size:14pt">More recent</button>
-      <button type="button" id="b3" style="right: -350px; position: relative; font-size:14pt">Change Zoom</button>
-
-
-        <!--div id="columnchart_material" style="width: 900px; height: 500px;"></div-->
-
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+    <br><br><br><br><br><br>
+    <button type="button" id="b1" style="right: -350px; position: relative; font-size:14pt;">Earlier</button>
+    <button type="button" id="b2" style="right: -350px; position: relative; font-size:14pt">More recent</button>
+    <button type="button" id="b3" style="right: -350px; position: relative; font-size:14pt">Change Zoom</button>
     <br><br><br><br><br><br><br>
+
     <img height="600" width="800" alt="embedded" src="data:image/png;base64,{{word_cloud}}"/>
 
     <h2>Most dominating word classes found in {{blog_name}}:</h2>

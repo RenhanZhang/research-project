@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import ipdb
 import profile_scraper
-MAX_POSTS = 5
+MAX_POSTS = 100
 api_key = 'AIzaSyAsO-ID5sIxbtvc59ir5v2xbVxZTA02VDo'
 
 
