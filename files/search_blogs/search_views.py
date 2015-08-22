@@ -60,11 +60,16 @@ def search_blog_by_link(request):
     if blog is None:
         return HttpResponse('Please input a valid url')
 
+    if len(posts) == 0:
+        return HttpResponse('Oops. Seems like you have published nothing in this blog')
+
+    mask = 100 if len(posts) > 100 else len(posts)
+
     # visualization
-    wc_uri = visualize.word_cloud(posts)
-    wf_vs_time = visualize.words_vs_time_beta(posts)
-    le_classes = visualize.ling_ethnography(posts)
-    ngram_model = visualize.ngram_model(posts)
+    wc_uri = visualize.word_cloud(posts[-mask:])
+    wf_vs_time = visualize.words_vs_time_beta(posts[-mask:])
+    le_classes = visualize.ling_ethnography(posts[-mask:])
+    ngram_model = visualize.ngram_model(posts[-mask:])
 
     # update the database
     dbh.batch_update(profile, blog, new_posts)
