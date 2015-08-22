@@ -20,7 +20,7 @@
             title: 'Most Common Words in Your Recent Posts',
             subtitle: 'Word Frequency versus Time',
             hAxis: {titleTextStyle: {color: '#333'}, viewWindow:{}},
-            vAxis: {minValue: 0},
+            vAxis: {minValue: 0, format: '#'},
             isStacked: true,
             height: 600,
             legend: {position: 'top', maxLines: 3},
@@ -98,6 +98,9 @@
     {% for class in le_classes %}
         <h3>{{ class }}</h3>
     {% endfor %}
+    <br><br>
+    <h2>Most dominating word classes found in {{blog_name}}:</h2>
+    <h3>{{ngram_model}}</h3>
             
 </body>
 </html>

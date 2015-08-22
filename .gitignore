@@ -4,3 +4,4 @@ files/mysite/settings.py
 files/run.sh
 files/mysite/urls.py
 files/TextVisualize/LinguisticEthnography/EthnolingClasses.pl
+*.pyc

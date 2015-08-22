@@ -3,7 +3,9 @@ from bs4 import BeautifulSoup
 import re
 import ipdb
 import profile_scraper
-MAX_POSTS = 100
+from dateutil import parser
+import calendar
+MAX_POSTS = 2500
 api_key = 'AIzaSyAsO-ID5sIxbtvc59ir5v2xbVxZTA02VDo'
 
 
@@ -15,13 +17,23 @@ def rm_special_char(s):
         s = s.replace(u, v)
     return s
 
+
+def parse_time(s):
+
+    d = parser.parse(s)
+    return calendar.timegm(d.utctimetuple()) * 1000
+
 def parse_post(post):
     # extract year-month-day
+    '''
     time_pat = '(\d{4})-(\d{2})-(\d{2})'
     (year, month, day) = re.search(time_pat, post['published']).groups()
     post['pub_year'] = int(year)
     post['pub_month'] = int(month)
     post['pub_day'] = int(day)
+    '''
+    post['published'] = parse_time(post['published'])
+    post['updated'] = parse_time(post['updated'])
     # use beautiful soup to parse the content
     #ipdb.set_trace()
     soup = BeautifulSoup(post['content'])
@@ -34,46 +46,52 @@ def get(url):
     data = requests.get(url)
     return data.json()
 
-def get_blog_by_link(blog_url):
+def get_blog_by_link(blog_url, latest):
 
+    # ipdb.set_trace()
     if not re.match('http', blog_url):
         blog_url = 'http://' + blog_url
 
     url = 'https://www.googleapis.com/blogger/v3/blogs/byurl?url=' + blog_url + '&key=' + api_key
     print url
     blog_summary = get(url)
+    blog_summary['published'] = parse_time(blog_summary['published'])
+    blog_summary['updated'] = parse_time(blog_summary['updated'])
 
     if 'id' not in blog_summary:
         return None, None
-    posts = get_blog_by_ID(blog_summary['id'])
+    profile_url, posts = get_blog_by_ID(blog_summary['id'], latest)
 
-    if len(posts) > 0:
-        profile_url = posts[0]['author']['url']
-
-    profile = profile_scraper.scrape_profile(profile_url)
+    profile = None
+    if profile_url:
+        profile = profile_scraper.scrape_profile(profile_url)
     return profile, blog_summary, posts
 
-def get_blog_by_ID(blog_id):
+def get_blog_by_ID(blog_id, latest):
 
     get_blog_url = 'https://www.googleapis.com/blogger/v3/blogs/' + str(blog_id) + '/posts?key=' + api_key
 
     all_posts = []
-
-    while True:
+    hit_earliest = False
+    profile_url = None
+    while not hit_earliest:
         print get_blog_url
         blog_info = get(get_blog_url)
 
-        for post in blog_info['items']:
-            post_id = post['id']
-            get_post_url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts/%s?key=%s' %(str(blog_id), post_id, api_key)
-            print get_post_url
-            post_detail = get(get_post_url)
-            all_posts.append(parse_post(post_detail))
+        for post in blog_info.get('items', None):
+
+            post = parse_post(post)
+
+            profile_url = post['author']['url']
+            # if this is the latest post already in db
+            if post['published'] <= latest:
+                hit_earliest = True
+                break
+            all_posts.append(post)
 
         if len(all_posts) >= MAX_POSTS:
             break
 
-        # ipdb.set_trace()
         # if all the posts have been obtained
         next_page_token = blog_info.get('nextPageToken', None)
         if next_page_token is None:
@@ -82,7 +100,6 @@ def get_blog_by_ID(blog_id):
             get_blog_url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts?key=%s&pageToken=%s' \
                            %(str(blog_id), api_key, next_page_token)
 
-    return all_posts
 
-#a = get_blog_by_link('http://d2r-travel.blogspot.com/')
-#get_blog_byID(2399953)
+    all_posts = sorted(all_posts, key=lambda x: x['published'])
+    return profile_url, all_posts

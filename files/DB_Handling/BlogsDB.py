@@ -5,18 +5,30 @@ import ipdb
 DEBUG = False
 EXEC = True
 import os
+import time
 from copy import deepcopy
 class BlogsDB_Handler:
 
     def __init__(self):
         info = self.read_db_setting()
+        '''
         self.conn = MySQLdb.connect(host = info['host'],
                                   user = info['user'],
                                   passwd = info['passwd'],
                                   db = info['db_name'],
                                   charset='utf8')
+        '''
+        self.conn = MySQLdb.connect(host='lit04.eecs.umich.edu',
+                                    user='rhzhang',
+                                    passwd='johnjohn',
+                                    db='myblogs',
+                                    charset='utf8')
         # ipdb.set_trace()
         self.cur = self.conn.cursor()
+
+    def close(self):
+        self.cur.close()
+        self.conn.close()
 
     def read_db_setting(self):
         '''
@@ -50,6 +62,32 @@ class BlogsDB_Handler:
             self.update_profile_blogs(profile, blog)
             print '\n\n-------------------profiles_blogs_followed--------------------'
             self.update_profile_blogs_followed(profile)
+        self.conn.commit()
+
+    def get_posts_in_blog(self, url):
+
+
+        stmt = u"select url, title, content, published, author_url, " \
+               u"location_latitude, location_longitude, location_name, location_span from blogs_posts as bp, posts as p \
+                 where bp.blog_url = '%s' and bp.post_url = p.url order by published" %url
+
+        self.exec_stmt(stmt)
+
+        attrs = {'url':0, 'title':1, 'content':2, 'published':3, 'author_url':4, \
+                'location_latitude':5, 'location_longitude':6, 'location_name':7, 'location_span':8}
+        posts = []
+        for tpl in self.cur.fetchall():
+            post = {}
+            for attr in attrs:
+                post[attr] = tpl[attrs[attr]]
+            posts.append(post)
+
+        #posts = sorted(posts, key=lambda x: x['published'], reverse=True)
+
+        # ensure all posts are in descending chronical order
+        assert all(posts[i]['published'] <= posts[i+1]['published'] for i in xrange(len(posts)-1))
+        return posts
+
 
     def update_blog(self, blog):
         self.prepare_blog(blog)
@@ -62,17 +100,16 @@ class BlogsDB_Handler:
                  updt = blog['updated'], loc_c = blog['locale']['country'], loc_lang = blog['locale']['language'],\
                  loc_var = blog['locale']['variant'])
 
+
         '''
         stmt = u'insert into blogs values (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;' \
                %(blog['url'], blog['description'], blog['name'], blog['published'],\
                  blog['updated'], blog['locale']['country'], blog['locale']['language'],\
                  blog['locale']['variant'])
         '''
+        #ipdb.set_trace()
 
-        if DEBUG:
-            print stmt
-        if EXEC:
-            self.exec_stmt(stmt)
+        self.exec_stmt(stmt)
 
     def prepare_blog(self, blog):
         attrs = ['url', 'description', 'name']
@@ -83,8 +120,8 @@ class BlogsDB_Handler:
             else: blog[attr] = '\'' + blog[attr] + '\''
         '''
         self.prepare_str(blog, attrs)
-        self.parse_time(blog, 'published')
-        self.parse_time(blog, 'updated')
+        #self.parse_time(blog, 'published')
+        #self.parse_time(blog, 'updated')
 
         if 'locale' not in blog:
             blog['locale'] = {}
@@ -104,10 +141,8 @@ class BlogsDB_Handler:
                    %(post['url'], post['title'], post['content'], post['published'], post['author_url'],\
                      post['location']['lat'], post['location']['lng'], post['location']['name'], post['location']['span'])
             '''
-            if DEBUG:
-                print stmt
-            if EXEC:
-                self.exec_stmt(stmt)
+
+            self.exec_stmt(stmt)
 
     def prepare_post(self, post):
         if 'author' in post:
@@ -115,7 +150,7 @@ class BlogsDB_Handler:
         else:
             post['author_url'] = None
 
-        self.parse_time(post, 'published')
+        #self.parse_time(post, 'published')
         attr = ['url', 'title', 'content', 'author_url']
         # ipdb.set_trace()
         self.prepare_str(post, attr)
@@ -137,25 +172,17 @@ class BlogsDB_Handler:
         if self.cur.execute('select * from blogs where url=%s' %p['url']):
             return
         # ipdb.set_trace()
-        stmt = u'insert into profiles values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;'\
-                %(p['url'], p['gender'], p['industry'], p['occupation'], p['city'],\
-                  p['state'], p['country'], p['introduction'], p['interests'], p['movies'],\
-                  p['music'], p['books'], p['name'], p['image_url'], p['email'], p['web_page_url'],\
-                  p['instant_messaging_service'], p['instant_messaging_username'])
 
-        stmt = 'insert into profiles values({url}, {gend}, {indst}, {occu}, {city}, {state}, {country}, {intro}, \
+        stmt = u'insert into profiles values({url}, {gend}, {indst}, {occu}, {city}, {state}, {country}, {intro}, \
                 {ints}, {movie}, {music}, {books}, {name}, {img_url}, {email}, {web_url}, {sms}, {sms_name} \
                 on duplicate key update url={url}, gender={gend}, industry={indst}, occupation{occu}, city={city}, state={state}, country={country}, \
                 introduction={intro}, interests={ints}, movies={movie}, music={music}, books={books}, name={name}, \
-                image_url={img_url}, email={email}, web_page_url={web_url}, instant_messaging_service={sms}, instant_messaging_username{sms_name}'\
+                image_url={img_url}, email={email}, web_page_url={web_url}, instant_messaging_service={sms}, instant_messaging_username={sms_name};'\
                 .format(url=p['url'], gend=p['gender'], indst=p['industry'], occu=p['occupation'], city=p['city'],\
                   state=p['state'], country=p['country'], intro=p['introduction'], ints=p['interests'], movie=p['movies'],\
                   music=p['music'], books=p['books'], name=p['name'], img_url=p['image_url'], email=p['email'], web_url=p['web_page_url'],\
                   sms=p['instant_messaging_service'], sms_name=p['instant_messaging_username'])
-        if DEBUG:
-            print stmt
-        if EXEC:
-            self.exec_stmt(stmt)
+        self.exec_stmt(stmt)
 
 
 
@@ -172,26 +199,20 @@ class BlogsDB_Handler:
     def update_blog_posts(self, blog, posts):
         for post in posts:
             stmt = u'insert ignore into blogs_posts values (%s, %s);' %(blog['url'], post['url'])
-            if DEBUG:
-                print stmt
-            if EXEC:
-                self.exec_stmt(stmt)
+
+            self.exec_stmt(stmt)
 
     def update_profile_blogs(self, profile, blog):
 
         stmt = u'insert ignore into profiles_blogs values (%s, %s);' %(profile['url'], blog['url'])
-        if DEBUG:
-            print stmt
-        if EXEC:
-            self.exec_stmt(stmt)
+
+        self.exec_stmt(stmt)
 
     def update_profile_blogs_followed(self, profile):
         for blog_url in profile['blogs_following']:
             stmt = u'insert into ignore profiles_blogs_followed values (%s, %s);' %(profile['url'], '\''+blog_url+'\'')
-            if DEBUG:
-                print stmt
-            if EXEC:
-                self.exec_stmt(stmt)
+
+            self.exec_stmt(stmt)
 
 
     def prepare_str(self, dictionary, attrs):
@@ -212,8 +233,13 @@ class BlogsDB_Handler:
             dictionary[attr] = 'NULL'
 
     def exec_stmt(self, stmt):
+        #time.sleep(0.1)
         try:
-            self.cur.execute(stmt)
+            if DEBUG:
+                print stmt
+            if EXEC:
+                self.cur.execute(stmt)
+                #self.conn.commit()
 
         except MySQLdb.Error as e:
             try:

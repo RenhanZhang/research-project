@@ -41,12 +41,21 @@ def search_blog_by_link(request):
 '''
 def search_blog_by_link(request):
 
-    #return render(request, 'search_page.html')
     if 'link' not in request.GET:
-        return HttpResponse('Please input an valid url to the blog')
+        return HttpResponse('Please input a url to the blog')
 
+    dbh = BlogsDB.BlogsDB_Handler()
     blog_link = request.GET['link']
-    profile, blog, posts = get.get_blog_by_link(blog_link)
+    posts = dbh.get_posts_in_blog(blog_link)
+    # ipdb.set_trace()
+    if len(posts) == 0:
+        latest = -1
+    else:
+        latest = posts[-1]['published']
+
+    profile, blog, new_posts = get.get_blog_by_link(blog_link, latest)
+
+    posts.extend(new_posts)
 
     if blog is None:
         return HttpResponse('Please input a valid url')
@@ -55,12 +64,14 @@ def search_blog_by_link(request):
     wc_uri = visualize.word_cloud(posts)
     wf_vs_time = visualize.words_vs_time_beta(posts)
     le_classes = visualize.ling_ethnography(posts)
+    ngram_model = visualize.ngram_model(posts)
 
     # update the database
-    dbh = BlogsDB.BlogsDB_Handler()
-    dbh.batch_update(profile, blog, posts)
+    dbh.batch_update(profile, blog, new_posts)
 
 
-    ctx = Context({'posts': posts, 'blog_name': blog['name'].replace("\'", ''),\
+    ctx = Context({'posts': posts, 'blog_name': blog['name'].replace("\'", ''), 'ngram_model': ngram_model,\
                    'wf_vs_time': wf_vs_time, 'word_cloud':wc_uri, 'le_classes':le_classes})
+
+    dbh.close()
     return render(request, 'blog_search_result.html', ctx)
