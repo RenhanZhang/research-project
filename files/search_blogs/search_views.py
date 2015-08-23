@@ -55,10 +55,10 @@ def search_blog_by_link(request):
 
     profile, blog, new_posts = get.get_blog_by_link(blog_link, latest)
 
-    posts.extend(new_posts)
-
     if blog is None:
-        return HttpResponse('Please input a valid url')
+        return HttpResponse('Please input a valid Blogger url')
+
+    posts.extend(new_posts)
 
     if len(posts) == 0:
         return HttpResponse('Oops. Seems like you have published nothing in this blog')

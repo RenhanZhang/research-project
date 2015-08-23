@@ -2,11 +2,13 @@ import MySQLdb
 from dateutil import parser
 import calendar
 import ipdb
-DEBUG = False
-EXEC = True
 import os
 import time
 from copy import deepcopy
+
+DEBUG = False
+EXEC = True
+
 class BlogsDB_Handler:
 
     def __init__(self):
@@ -45,15 +47,12 @@ class BlogsDB_Handler:
         return account_info
 
     def batch_update(self, profile, blog, posts):
-        profile = deepcopy(profile)
-        blog = deepcopy(blog)
-        posts = deepcopy(posts)
         print '\n\n-------------------blogs--------------------'
         self.update_blog(blog)
         print '\n\n-------------------posts--------------------'
         self.update_posts(posts)
         print '\n\n-------------------blogs_posts--------------------'
-        self.update_blog_posts(blog, posts)
+        self.update_blog_posts(blog['url'], posts)
 
         if profile:
             print '\n\n-------------------profiles--------------------'
@@ -62,14 +61,12 @@ class BlogsDB_Handler:
             self.update_profile_blogs(profile, blog)
             print '\n\n-------------------profiles_blogs_followed--------------------'
             self.update_profile_blogs_followed(profile)
-        self.conn.commit()
+        #self.conn.commit()
 
     def get_posts_in_blog(self, url):
-
-
         stmt = u"select url, title, content, published, author_url, " \
                u"location_latitude, location_longitude, location_name, location_span from blogs_posts as bp, posts as p \
-                 where bp.blog_url = '%s' and bp.post_url = p.url order by published" %url
+                 where bp.blog_url = '%s' and bp.post_url = p.url order by published;" %url
 
         self.exec_stmt(stmt)
 
@@ -90,6 +87,7 @@ class BlogsDB_Handler:
 
 
     def update_blog(self, blog):
+        blog = deepcopy(blog)
         self.prepare_blog(blog)
         stmt = u'insert into blogs\
                  values ({url}, {desc}, {name}, {pub}, {updt}, {loc_c}, {loc_lang}, {loc_var})\
@@ -128,6 +126,7 @@ class BlogsDB_Handler:
         self.prepare_str(blog['locale'], ['language', 'country', 'variant'])
 
     def update_posts(self, posts):
+        posts = deepcopy(posts)
         for post in posts:
             self.prepare_post(post)
             stmt = u'insert into posts values({url}, {title}, {cont}, {pub}, {auth_url}, {loc_lat}, {loc_lng}, {loc_name}, {loc_span})\
@@ -135,12 +134,8 @@ class BlogsDB_Handler:
                     update url = {url}, title = {title}, content = {cont}, published = {pub}, author_url = {auth_url},\
                     location_latitude = {loc_lat}, location_longitude = {loc_lng}, location_name = {loc_name}, location_span = {loc_span};'\
             .format(url=post['url'], title=post['title'], cont=post['content'], pub=post['published'], auth_url=post['author_url'],\
-                     loc_lat=post['location']['lat'], loc_lng=post['location']['lng'], loc_name=post['location']['name'], loc_span=post['location']['span'])
-            '''
-            stmt = u'insert into posts values(%s, %s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;' \
-                   %(post['url'], post['title'], post['content'], post['published'], post['author_url'],\
-                     post['location']['lat'], post['location']['lng'], post['location']['name'], post['location']['span'])
-            '''
+                     loc_lat=post['location']['lat'], loc_lng=post['location']['lng'], loc_name=post['location']['name'],
+                    loc_span=post['location']['span'])
 
             self.exec_stmt(stmt)
 
@@ -168,6 +163,7 @@ class BlogsDB_Handler:
         self.prepare_str(post['location'], ['name', 'lat', 'lng', 'span'])
 
     def update_profile(self, p):
+        p = deepcopy(p)
         self.prepare_profile(p)
         if self.cur.execute('select * from blogs where url=%s' %p['url']):
             return
@@ -184,8 +180,6 @@ class BlogsDB_Handler:
                   sms=p['instant_messaging_service'], sms_name=p['instant_messaging_username'])
         self.exec_stmt(stmt)
 
-
-
     def prepare_profile(self, profile):
 
         # prepare profile into a format suitable for database
@@ -196,26 +190,28 @@ class BlogsDB_Handler:
         self.prepare_str(profile, attrs)
 
 
-    def update_blog_posts(self, blog, posts):
+    def update_blog_posts(self, blog_url, posts):
+
         for post in posts:
-            stmt = u'insert ignore into blogs_posts values (%s, %s);' %(blog['url'], post['url'])
+            stmt = u"insert ignore into blogs_posts values ('%s', '%s');" %(blog_url, post['url'])
 
             self.exec_stmt(stmt)
 
     def update_profile_blogs(self, profile, blog):
 
-        stmt = u'insert ignore into profiles_blogs values (%s, %s);' %(profile['url'], blog['url'])
+        stmt = u"insert ignore into profiles_blogs values ('%s', '%s');" %(profile['url'], blog['url'])
 
         self.exec_stmt(stmt)
 
     def update_profile_blogs_followed(self, profile):
         for blog_url in profile['blogs_following']:
-            stmt = u'insert into ignore profiles_blogs_followed values (%s, %s);' %(profile['url'], '\''+blog_url+'\'')
+            stmt = u"insert into ignore profiles_blogs_followed values ('%s', '%s');" %(profile['url'], blog_url)
 
             self.exec_stmt(stmt)
 
 
     def prepare_str(self, dictionary, attrs):
+        escape_pairs = {'\\': '\\\\', '"': '\\"', '\'': '\\\'', '%': '\\%', '\n': '\\n', '\t': '\\t', '_': '\\_'}
         for attr in attrs:
             if attr not in dictionary or not dictionary[attr]:
                 dictionary[attr] = 'NULL'
@@ -223,7 +219,10 @@ class BlogsDB_Handler:
                 #if dictionary[attr] == '':
                 #    dictionary[attr] = 'NULL'
                 #else: dictionary[attr] = '\'' + dictionary[attr] + '\''
-                dictionary[attr] = '\'' + dictionary[attr].replace('\'', '\'\'') + '\''
+                for pat in escape_pairs:
+                    dictionary[attr] = dictionary[attr].replace(pat, escape_pairs[pat])
+
+                dictionary[attr] = '\'' + '\''
 
     def parse_time(self, dictionary, attr):
         if attr in dictionary:
@@ -235,13 +234,16 @@ class BlogsDB_Handler:
     def exec_stmt(self, stmt):
         #time.sleep(0.1)
         try:
-            if DEBUG:
+            self.cur.execute(stmt)
+            if len(self.cur.messages) > 0:
+                print '----------------------Error--------------------'
                 print stmt
-            if EXEC:
-                self.cur.execute(stmt)
-                #self.conn.commit()
+                print '-------------------\n%s' %self.cur.messages
+            self.conn.commit()
 
         except MySQLdb.Error as e:
+            print stmt
+
             try:
                 print "MySQL Error [%d]: %s" % (e.args[0], e.args[1])
             except IndexError:
