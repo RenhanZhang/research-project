@@ -9,6 +9,8 @@ from copy import deepcopy
 DEBUG = False
 EXEC = True
 
+BLOG_ATTR = ['url', 'description', 'name', 'published', 'updated', 'locale']
+POST_ATTR = ['url', 'title', 'content', 'published', 'author_url', 'location']
 class BlogsDB_Handler:
 
     def __init__(self):
@@ -47,6 +49,7 @@ class BlogsDB_Handler:
         return account_info
 
     def batch_update(self, profile, blog, posts):
+        #ipdb.set_trace()
         print '\n\n-------------------blogs--------------------'
         self.update_blog(blog)
         print '\n\n-------------------posts--------------------'
@@ -66,9 +69,9 @@ class BlogsDB_Handler:
     def get_posts_in_blog(self, url):
         stmt = u"select url, title, content, published, author_url, " \
                u"location_latitude, location_longitude, location_name, location_span from blogs_posts as bp, posts as p \
-                 where bp.blog_url = '%s' and bp.post_url = p.url order by published;" %url
+                 where bp.blog_url = %s and bp.post_url = p.url order by published;"
 
-        self.exec_stmt(stmt)
+        self.exec_stmt(stmt, (url))
 
         attrs = {'url':0, 'title':1, 'content':2, 'published':3, 'author_url':4, \
                 'location_latitude':5, 'location_longitude':6, 'location_name':7, 'location_span':8}
@@ -90,54 +93,42 @@ class BlogsDB_Handler:
         blog = deepcopy(blog)
         self.prepare_blog(blog)
         stmt = u'insert into blogs\
-                 values ({url}, {desc}, {name}, {pub}, {updt}, {loc_c}, {loc_lang}, {loc_var})\
+                 values (%s, %s, %s, %s, %s, %s, %s, %s)\
                  on duplicate key\
-                 update url = {url}, description = {desc}, name = {name}, published = {pub},\
-                 updated = {updt}, locale_country = {loc_c}, locale_language = {loc_lang}, locale_variant = {loc_var};'\
-                 .format(url = blog['url'], desc = blog['description'], name = blog['name'], pub = blog['published'],\
-                 updt = blog['updated'], loc_c = blog['locale']['country'], loc_lang = blog['locale']['language'],\
-                 loc_var = blog['locale']['variant'])
+                 update url = %s, description = %s, name = %s, published = %s,\
+                 updated = %s, locale_country = %s, locale_language = %s, locale_variant = %s;'
 
+        params = [blog['url'], blog['description'], blog['name'], blog['published'],blog['updated'],
+                  blog['locale']['country'], blog['locale']['language'], blog['locale']['variant']]
 
-        '''
-        stmt = u'insert into blogs values (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update;' \
-               %(blog['url'], blog['description'], blog['name'], blog['published'],\
-                 blog['updated'], blog['locale']['country'], blog['locale']['language'],\
-                 blog['locale']['variant'])
-        '''
+        params.extend(params)
         #ipdb.set_trace()
 
-        self.exec_stmt(stmt)
+        self.exec_stmt(stmt, params)
 
     def prepare_blog(self, blog):
-        attrs = ['url', 'description', 'name']
-        '''
-        for attr in attrs:
-            if attr not in blog or not blog[attr] or blog[attr] == '':
-                blog[attr] = 'NULL'
-            else: blog[attr] = '\'' + blog[attr] + '\''
-        '''
-        self.prepare_str(blog, attrs)
-        #self.parse_time(blog, 'published')
-        #self.parse_time(blog, 'updated')
+
+        self.prepare_attr(blog, [x for x in BLOG_ATTR if x != 'locale'])
 
         if 'locale' not in blog:
             blog['locale'] = {}
-        self.prepare_str(blog['locale'], ['language', 'country', 'variant'])
+
+        self.prepare_attr(blog['locale'], ['country', 'language', 'variant'])
 
     def update_posts(self, posts):
         posts = deepcopy(posts)
         for post in posts:
             self.prepare_post(post)
-            stmt = u'insert into posts values({url}, {title}, {cont}, {pub}, {auth_url}, {loc_lat}, {loc_lng}, {loc_name}, {loc_span})\
+            stmt = u'insert into posts values(%s, %s, %s, %s, %s, %s, %s, %s, %s)\
                     on duplicate key\
-                    update url = {url}, title = {title}, content = {cont}, published = {pub}, author_url = {auth_url},\
-                    location_latitude = {loc_lat}, location_longitude = {loc_lng}, location_name = {loc_name}, location_span = {loc_span};'\
-            .format(url=post['url'], title=post['title'], cont=post['content'], pub=post['published'], auth_url=post['author_url'],\
-                     loc_lat=post['location']['lat'], loc_lng=post['location']['lng'], loc_name=post['location']['name'],
-                    loc_span=post['location']['span'])
+                    update url = %s, title = %s, content = %s, published = %s, author_url = %s,\
+                    location_latitude = %s, location_longitude = %s, location_name = %s, location_span = %s;'
 
-            self.exec_stmt(stmt)
+            params = [post['url'], post['title'], post['content'], post['published'], post['author_url'],
+                      post['location']['lat'], post['location']['lng'], post['location']['name'], post['location']['span']]
+            params.extend(params)
+
+            self.exec_stmt(stmt, params)
 
     def prepare_post(self, post):
         if 'author' in post:
@@ -145,10 +136,9 @@ class BlogsDB_Handler:
         else:
             post['author_url'] = None
 
-        #self.parse_time(post, 'published')
-        attr = ['url', 'title', 'content', 'author_url']
-        # ipdb.set_trace()
-        self.prepare_str(post, attr)
+        attrs = ['url', 'title', 'content', 'published']
+        self.prepare_attr(post, attrs)
+        #ipdb.set_trace()
 
         # prepare for location info
         ''' "location": {
@@ -160,69 +150,56 @@ class BlogsDB_Handler:
         '''
         if 'location' not in post:
             post['location'] = {}
-        self.prepare_str(post['location'], ['name', 'lat', 'lng', 'span'])
+        self.prepare_attr(post['location'], ['name', 'lat', 'lng', 'span'])
 
     def update_profile(self, p):
         p = deepcopy(p)
-        self.prepare_profile(p)
-        if self.cur.execute('select * from blogs where url=%s' %p['url']):
-            return
         # ipdb.set_trace()
 
-        stmt = u'insert into profiles values({url}, {gend}, {indst}, {occu}, {city}, {state}, {country}, {intro}, \
-                {ints}, {movie}, {music}, {books}, {name}, {img_url}, {email}, {web_url}, {sms}, {sms_name} \
-                on duplicate key update url={url}, gender={gend}, industry={indst}, occupation{occu}, city={city}, state={state}, country={country}, \
-                introduction={intro}, interests={ints}, movies={movie}, music={music}, books={books}, name={name}, \
-                image_url={img_url}, email={email}, web_page_url={web_url}, instant_messaging_service={sms}, instant_messaging_username={sms_name};'\
-                .format(url=p['url'], gend=p['gender'], indst=p['industry'], occu=p['occupation'], city=p['city'],\
-                  state=p['state'], country=p['country'], intro=p['introduction'], ints=p['interests'], movie=p['movies'],\
-                  music=p['music'], books=p['books'], name=p['name'], img_url=p['image_url'], email=p['email'], web_url=p['web_page_url'],\
-                  sms=p['instant_messaging_service'], sms_name=p['instant_messaging_username'])
-        self.exec_stmt(stmt)
+        stmt = u'insert into profiles values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)\
+                 on duplicate key update\
+                 url=%s, gender=%s, industry=%s, occupation=%s, city=%s, state=%s, country=%s, \
+                introduction=%s, interests=%s, movies=%s, music=%s, books=%s, name=%s, \
+                image_url=%s, email=%s, web_page_url=%s, instant_messaging_service=%s, instant_messaging_username=%s;'
 
-    def prepare_profile(self, profile):
+        attrs = ['url', 'gender', 'industry', 'occupation', 'city',
+                 'state', 'country', 'introduction', 'interests', 'movies',
+                 'music', 'books', 'name', 'image_url', 'email', 'web_page_url',
+                 'instant_messaging_service', 'instant_messaging_username']
+        self.prepare_attr(p, attrs)
+        params = [p[x] for x in attrs]
 
-        # prepare profile into a format suitable for database
-        attrs = ['url', 'interests','city','name','instant_messaging_username',
-                 'introduction','gender','industry','instant_messaging_service',
-                 'movies','state','books','music','country','image_url','email',
-                 'web_page_url','occupation']
-        self.prepare_str(profile, attrs)
-
+        params.extend(params)
+        self.exec_stmt(stmt, params)
 
     def update_blog_posts(self, blog_url, posts):
 
         for post in posts:
-            stmt = u"insert ignore into blogs_posts values ('%s', '%s');" %(blog_url, post['url'])
+            stmt = u"insert ignore into blogs_posts values (%s, %s);"
+            params = (blog_url, post['url'])
 
-            self.exec_stmt(stmt)
+            self.exec_stmt(stmt, params)
 
     def update_profile_blogs(self, profile, blog):
 
-        stmt = u"insert ignore into profiles_blogs values ('%s', '%s');" %(profile['url'], blog['url'])
+        stmt = u"insert ignore into profiles_blogs values (%s, %s);"
+        params = (profile['url'], blog['url'])
 
-        self.exec_stmt(stmt)
+        self.exec_stmt(stmt, params)
 
     def update_profile_blogs_followed(self, profile):
         for blog_url in profile['blogs_following']:
-            stmt = u"insert into ignore profiles_blogs_followed values ('%s', '%s');" %(profile['url'], blog_url)
+            stmt = u"insert into ignore profiles_blogs_followed values (%s, %s);"
+            params = (profile['url'], blog_url)
 
-            self.exec_stmt(stmt)
+            self.exec_stmt(stmt, params)
 
 
-    def prepare_str(self, dictionary, attrs):
-        escape_pairs = {'\\': '\\\\', '"': '\\"', '\'': '\\\'', '%': '\\%', '\n': '\\n', '\t': '\\t', '_': '\\_'}
+    def prepare_attr(self, dictionary, attrs):
+        # escape_pairs = {'\\': '\\\\', '"': '\\"', '\'': '\\\'', '%': '\\%', '\n': '\\n', '\t': '\\t', '_': '\\_'}
         for attr in attrs:
-            if attr not in dictionary or not dictionary[attr]:
-                dictionary[attr] = 'NULL'
-            elif isinstance(dictionary[attr], basestring):
-                #if dictionary[attr] == '':
-                #    dictionary[attr] = 'NULL'
-                #else: dictionary[attr] = '\'' + dictionary[attr] + '\''
-                for pat in escape_pairs:
-                    dictionary[attr] = dictionary[attr].replace(pat, escape_pairs[pat])
-
-                dictionary[attr] = '\'' + '\''
+            if attr not in dictionary:
+                dictionary[attr] = None
 
     def parse_time(self, dictionary, attr):
         if attr in dictionary:
@@ -231,10 +208,11 @@ class BlogsDB_Handler:
         else:
             dictionary[attr] = 'NULL'
 
-    def exec_stmt(self, stmt):
+    def exec_stmt(self, stmt, params):
         #time.sleep(0.1)
+        #print stmt
         try:
-            self.cur.execute(stmt)
+            self.cur.execute(stmt, params)
             if len(self.cur.messages) > 0:
                 print '----------------------Error--------------------'
                 print stmt

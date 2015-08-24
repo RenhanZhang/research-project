@@ -6,6 +6,7 @@ import profile_scraper
 from dateutil import parser
 import calendar
 from DB_Handling import BlogsDB
+
 import multiprocessing as mp
 
 MAX_POSTS = 2500
@@ -48,6 +49,7 @@ def parse_post(post):
 
 def get(url):
    # return the content in json format
+    #ipdb.set_trace()
     print url
     data = requests.get(url)
     return data.json()
@@ -111,7 +113,7 @@ def get_blog_by_ID(blog_url, blog_id, latest):
                 get_remain_posts(blog_url, blog_id, next_page_token,
                                         MAX_POSTS - MAX_TO_DISPLAY, latest)
                 '''
-                proc.start()
+                #proc.start()
                 break
 
     all_posts = sorted(all_posts, key=lambda x: x['published'])
