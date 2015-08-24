@@ -71,7 +71,7 @@ class BlogsDB_Handler:
                u"location_latitude, location_longitude, location_name, location_span from blogs_posts as bp, posts as p \
                  where bp.blog_url = %s and bp.post_url = p.url order by published;"
 
-        self.exec_stmt(stmt, (url))
+        self.exec_stmt(stmt, [url])
 
         attrs = {'url':0, 'title':1, 'content':2, 'published':3, 'author_url':4, \
                 'location_latitude':5, 'location_longitude':6, 'location_name':7, 'location_span':8}
@@ -183,14 +183,14 @@ class BlogsDB_Handler:
     def update_profile_blogs(self, profile, blog):
 
         stmt = u"insert ignore into profiles_blogs values (%s, %s);"
-        params = (profile['url'], blog['url'])
+        params = [profile['url'], blog['url']]
 
         self.exec_stmt(stmt, params)
 
     def update_profile_blogs_followed(self, profile):
         for blog_url in profile['blogs_following']:
             stmt = u"insert into ignore profiles_blogs_followed values (%s, %s);"
-            params = (profile['url'], blog_url)
+            params = [profile['url'], blog_url]
 
             self.exec_stmt(stmt, params)
 
