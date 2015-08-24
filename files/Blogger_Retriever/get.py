@@ -7,8 +7,6 @@ from dateutil import parser
 import calendar
 from DB_Handling import BlogsDB
 
-import multiprocessing as mp
-
 MAX_POSTS = 2500
 MAX_TO_DISPLAY = 100
 
@@ -38,6 +36,7 @@ def parse_post(post):
     post['pub_month'] = int(month)
     post['pub_day'] = int(day)
     '''
+    post['pub'] = post['published']
     post['published'] = parse_time(post['published'])
     post['updated'] = parse_time(post['updated'])
     # use beautiful soup to parse the content
@@ -56,7 +55,7 @@ def get(url):
 
 def get_blog_by_link(blog_url, latest):
 
-    # ipdb.set_trace()
+    #ipdb.set_trace()
     if not re.match('http', blog_url):
         blog_url = 'http://' + blog_url
 
@@ -64,25 +63,24 @@ def get_blog_by_link(blog_url, latest):
     blog_summary = get(url)
 
     if 'id' not in blog_summary:
-        return None, None, None
+        return None, None, None, None
 
     blog_summary['published'] = parse_time(blog_summary['published'])
     blog_summary['updated'] = parse_time(blog_summary['updated'])
 
-    profile_url, posts = get_blog_by_ID(blog_url, blog_summary['id'], latest)
+    profile_url, posts, next_page_token = get_blog_by_ID(blog_summary['id'], latest)
 
     profile = None
     if profile_url:
         profile = profile_scraper.scrape_profile(profile_url)
-    return profile, blog_summary, posts
+    return profile, blog_summary, posts, next_page_token
 
-def get_blog_by_ID(blog_url, blog_id, latest):
+def get_blog_by_ID(blog_id, latest):
 
     get_blog_url = 'https://www.googleapis.com/blogger/v3/blogs/' + str(blog_id) + '/posts?key=' + api_key
 
-    all_posts = []
-    hit_earliest = False
-    profile_url = None
+    all_posts, hit_earliest, profile_url, next_page_token = [], False, None, None
+
     while not hit_earliest:
 
         blog_info = get(get_blog_url)
@@ -105,24 +103,14 @@ def get_blog_by_ID(blog_url, blog_id, latest):
             get_blog_url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts?key=%s&pageToken=%s' \
                            %(str(blog_id), api_key, next_page_token)
             if len(all_posts) >= MAX_TO_DISPLAY:
-
-                proc = mp.Process(target=get_remain_posts,
-                                  args=(blog_url, blog_id, next_page_token,
-                                        MAX_POSTS - MAX_TO_DISPLAY, latest))
-                '''
-                get_remain_posts(blog_url, blog_id, next_page_token,
-                                        MAX_POSTS - MAX_TO_DISPLAY, latest)
-                '''
-                #proc.start()
                 break
 
     all_posts = sorted(all_posts, key=lambda x: x['published'])
-    return profile_url, all_posts
+    return profile_url, all_posts, next_page_token
 
 def get_remain_posts(blog_url, blog_id, init_pg_token, quota, earliest):
 
-    url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts?key=%s&pageToken=%s' \
-                           %(str(blog_id), api_key, init_pg_token)
+    url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts?key=%s&pageToken=%s' %(str(blog_id), api_key, init_pg_token)
 
     dbh = BlogsDB.BlogsDB_Handler()
     #ipdb.set_trace()
@@ -130,7 +118,7 @@ def get_remain_posts(blog_url, blog_id, init_pg_token, quota, earliest):
         print 'parallel...'
 
         data = get(url)
-        posts = [parse_post(post) for post in data.get('items', None)]
+        posts = [parse_post(post) for post in data['items']]
         quota -= len(posts)
 
         # update the database
@@ -146,5 +134,6 @@ def get_remain_posts(blog_url, blog_id, init_pg_token, quota, earliest):
         else:
             url = 'https://www.googleapis.com/blogger/v3/blogs/%s/posts?key=%s&pageToken=%s' \
                            %(str(blog_id), api_key, next_page_token)
+    print 'parallel done'
 
     dbh.close()
