@@ -85,6 +85,7 @@
 </head>
 <body>
 <h1>You searched blog {{blog_name}}</h1>
+    <img height="450" width="450" alt="embedded" src="{{personality_url|safe}}"/>
     <div id="chart_div" style="width: 900px; height: 500px;"></div>
     <br><br><br><br><br><br>
     <button type="button" id="b1" style="right: -350px; position: relative; font-size:14pt;">Earlier</button>
@@ -93,7 +94,6 @@
     <br><br><br><br><br><br><br>
 
     <img height="600" width="800" alt="embedded" src="data:image/png;base64,{{word_cloud}}"/>
-
     <h2>Most dominating word classes found in {{blog_name}}:</h2>
     {% for class in le_classes %}
         <h3>{{ class }}</h3>

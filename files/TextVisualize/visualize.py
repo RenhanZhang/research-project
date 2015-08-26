@@ -13,6 +13,7 @@ import re, os, errno, codecs
 from wordcloud import WordCloud
 import json
 from time import mktime
+from GChartWrapper import Radar
 
 dirname = os.path.dirname(os.path.abspath(__file__))
 
@@ -153,13 +154,77 @@ def ngram_model(posts, N=3):
 
     text = ' '.join([post['content'] for post in posts])
     temp_id = str(uuid.uuid4())
-    contents_fname = dirname + '/contents_%s.txt' %temp_id
+    contents_fname = dirname + '/contents_%s.txt' % temp_id
     with codecs.open(contents_fname, 'wb', encoding='utf8') as f:
         f.write(text)
     model = subprocess.check_output(['python', dirname+'/'+'ngram_model.py', contents_fname, str(N)])
 
     silentremove(contents_fname)
     return model
+
+def peronality(posts):
+    # ipdb.set_trace()
+    print 'personality'
+    pkg_path = dirname + '/personality_package'
+    weka_path = dirname + '/weka-3-7-12/weka.jar'
+    traits = ['ope', 'neu', 'agr', 'ext', 'con']
+    text = ' '.join([post['content'].encode('ascii', errors='ignore') for post in posts])
+    temp_id = str(uuid.uuid4())
+    scores = []         # store the scores of different personality traits
+    abbrev = {
+        'ope': 'openness', 'neu': 'emotional-stability', 'agr': 'agreeableness', 
+        'ext': 'extraversion', 'con': 'conscientiousness'
+    }
+
+    cont_path = pkg_path + '/content%s.txt' % temp_id
+    # write the text to a temp file
+    with codecs.open(cont_path, 'wb', encoding='utf8') as f:
+        f.write(text)
+        # prepare the arff data for prediction
+        arff_data = subprocess.check_output(['python', pkg_path + '/text2arff.py', cont_path])
+    
+    # remove the content file as we have the arff file now
+    silentremove(cont_path)
+
+    for trait in traits:
+        print trait
+        arff = arff_data.replace('target', trait)
+
+        arff_path = pkg_path + '/' + temp_id + trait + '.arff'
+        with codecs.open(arff_path, 'wb', encoding='utf8') as f:
+            f.write(arff)
+
+        cmd = ['bash', pkg_path + '/predict.sh', weka_path, 'functions.LinearRegression', 
+               arff_path,pkg_path + '/models/%s.linear-regression.model' % abbrev[trait]]
+
+        result = subprocess.check_output(cmd)
+        silentremove(arff_path)
+
+        score = float(result.split()[-2])
+        scores.append(score)
+    
+
+    # scores = [float(x)/max(data) for x in data]
+    scores.append(scores[0])
+    G = Radar(scores, encoding='text')  
+    G.title('5-Traits Personality')
+    G.type('rs')
+    G.size(450,450)
+    G.color('red','CC3366')
+    G.line(2,1,0)
+    G.axes(['y', 'x'])
+    G.axes.range(0, 1)
+    G.axes.label(0, 0.25, 0.5, 0.75, 1)
+    G.label('open', 'emotional-stable', 'agreeable', 'extraverse', 'conscientious')
+    G.scale(0,max(scores))
+    #G.axes.range(0, 0,360)
+
+    return G.url + '&chxs=0,989898,12|1,000000,12,0'
+
+
+
+
+
 
 
 

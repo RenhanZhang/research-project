@@ -1,0 +1,23 @@
+
+
+# Personality Package
+# code to use trained weka models to make new predictions about the big 5 personality traits
+# Steve Wilson, Summer 2015
+
+Contents:
+features.py  - library used for feature extraction
+models/      - directory. contains a trained linear regression model for each of the big 5 personality traits
+predict.sh   - example script that predicts the value of a data point in arff format
+resources/   - directory. contains data sources needed by features.py
+test.txt     - an example text file to use for demo purposes
+text2arff.py - functions to convert plain text into feature vectors in arff format
+
+Quick start guide:
+# create an arff file from the text
+ ./text2arff.py test.txt > test.arff
+# since the sample code will just use 'target' as the name for the target variable,
+#    change this to one of [ope, neu, agr, ext, con] depending on which personality
+#    trait to predict, then choose the model accordingly. For example,
+#    change target -> ope in the test.arff, then run
+ ./predict.sh /home/public/weka-3-7-12/weka.jar functions.LinearRegression test.arff models/openness.linear-regression.model
+ 

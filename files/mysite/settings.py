@@ -31,7 +31,7 @@ ALLOWED_HOSTS = [
 '.nlp.eecs.umich.edu.'
 ]
 
-DEBUG = False
+DEBUG = True
 # Application definition
 
 INSTALLED_APPS = (
