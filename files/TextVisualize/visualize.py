@@ -181,8 +181,12 @@ def peronality(posts):
     with codecs.open(cont_path, 'wb', encoding='utf8') as f:
         f.write(text)
         # prepare the arff data for prediction
-        arff_data = subprocess.check_output(['python', pkg_path + '/text2arff.py', cont_path])
-    
+        try:
+            arff_data = subprocess.check_output(['python', pkg_path + '/text2arff.py', cont_path],
+                                             stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+
     # remove the content file as we have the arff file now
     silentremove(cont_path)
 
@@ -197,7 +201,10 @@ def peronality(posts):
         cmd = ['bash', pkg_path + '/predict.sh', weka_path, 'functions.LinearRegression', 
                arff_path,pkg_path + '/models/%s.linear-regression.model' % abbrev[trait]]
 
-        result = subprocess.check_output(cmd)
+        try:
+            result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
         silentremove(arff_path)
 
         score = float(result.split()[-2])

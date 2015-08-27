@@ -54,8 +54,16 @@ def extract_from(text, target_name='target', wordlist=None):
 # testing
 if __name__ == "__main__":
     if len(sys.argv) < 1:
+        '''
         sys.stderr.write("Usage: ./text2arff.py <textfile>")
+        '''
+        a = 1
     else:
         arff = extract_from(open(sys.argv[1]).read()) # argv[1] should be filename to read text from
         print arff
+        '''
         sys.stderr.write("NOTE: need to change the 'target' variable name to one of: [ope, con, agr, neu, ext] depending on model to use")
+        
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+        '''
