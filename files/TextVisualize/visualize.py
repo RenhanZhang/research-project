@@ -167,13 +167,13 @@ def peronality(posts):
     print 'personality'
     pkg_path = dirname + '/personality_package'
     weka_path = dirname + '/weka-3-7-12/weka.jar'
-    traits = ['ope', 'neu', 'agr', 'ext', 'con']
+    traits = ['con', 'ope', 'neu', 'agr', 'ext']
     text = ' '.join([post['content'].encode('ascii', errors='ignore') for post in posts])
     temp_id = str(uuid.uuid4())
     scores = []         # store the scores of different personality traits
     abbrev = {
-        'ope': 'openness', 'neu': 'emotional-stability', 'agr': 'agreeableness', 
-        'ext': 'extraversion', 'con': 'conscientiousness'
+        'con': 'conscientiousness', 'ope': 'openness', 'neu': 'emotional-stability', 
+        'agr': 'agreeableness', 'ext': 'extraversion', 
     }
 
     cont_path = pkg_path + '/content%s.txt' % temp_id
@@ -211,21 +211,40 @@ def peronality(posts):
         scores.append(score)
     
 
-    # scores = [float(x)/max(data) for x in data]
+    avg = [3.48682181564, 3.78697472093, 2.77373519534, 3.5433602257, 3.57498918951]
+
+    # ensure scores are in (0,5) range
+    scores = [min(5, x) for x in scores]
+    scores = [max(0, x) for x in scores]
+
+    # add an extra term so tail meets head in the radar chart
     scores.append(scores[0])
-    G = Radar(scores, encoding='text')  
+    avg.append(avg[0])
+
+    # convert emotional unstability to stability
+    scores[2] = 2 * avg[2] - scores[2]
+
+    print scores
+    print avg
+
+    G = Radar([scores, avg], encoding='text')  
     G.title('5-Traits Personality')
     G.type('rs')
-    G.size(450,450)
-    G.color('red','CC3366')
+    G.size(500,500)
+    G.color('blue','CC3366')
+    G.line(2,1,0)
     G.line(2,1,0)
     G.axes(['y', 'x'])
-    G.axes.range(0, 1)
-    G.axes.label(0, 0.25, 0.5, 0.75, 1)
-    G.label('open', 'emotional-stable', 'agreeable', 'extraverse', 'conscientious')
+    G.axes.range(0, 0, 5, 1)
+    G.label(1, 2, 3, 4, 5)
+    name = 'You'
+    if 'author' in posts[0] and 'displayName' in posts[0]['author']:
+        name = posts[0]['author']['displayName']
+    G.legend('You', 'Average')
+    G.label('conscientious', 'open', 'emotional-stable', 'agreeable', 'extraverse')
     G.scale(0,max(scores))
-    #G.axes.range(0, 0,360)
-
+    G.margin(10, 10, 10, 0)
+    #G.url += '&chdlp=b'
     return G.url + '&chxs=0,989898,12|1,000000,12,0'
 
 
