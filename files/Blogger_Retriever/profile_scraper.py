@@ -2,24 +2,29 @@ from bs4 import BeautifulSoup as bs
 import requests
 import re
 import MySQLdb
+import os
+import ipdb
 '''
 This module is used to scrape the following attributes from a users' profile given his/her url
 gender, industry, occupation, city, state, country, introduction,
 interests, movies, music, books, name, image_url, email, web_page_url
 instant_messaging_service  instant_messaging_username, blogs_following
 '''
+dirname = os.path.dirname(os.path.abspath(__file__))
 
 def scrape_profile(url):
-
+    
     a = requests.get(url)
     s = bs(a.text, 'html.parser')
     profile = {}
     profile['url'] = url
+    #ipdb.set_trace()
     # if the connection is well established, we are sure to get an image_url
     # But when the request is blocked because of too frequent query to blogger.com,
     # there will be no image_url
+
     if not scrape_image_url(s, profile):
-        return None
+        return profile
 
     scrape_blogs_followed(a.text, profile)
     scrape_email(s, profile)

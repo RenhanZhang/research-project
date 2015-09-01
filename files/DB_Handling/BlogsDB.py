@@ -57,7 +57,7 @@ class BlogsDB_Handler:
         print '\n\n-------------------blogs_posts--------------------'
         self.update_blog_posts(blog['url'], posts)
 
-        if profile:
+        if 'image_url' in profile:
             print '\n\n-------------------profiles--------------------'
             self.update_profile(profile)
             print '\n\n-------------------profiles_blog--------------------'

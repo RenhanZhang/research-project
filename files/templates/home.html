@@ -1,12 +1,25 @@
 <html>
 <head>
     <title>Search</title>
+    <script type="text/javascript">
+    function showValue(newValue)
+    {
+        document.getElementById("range").innerHTML=newValue;
+    }
+    </script>
 </head>
 <body style="background-color:lightgrey; position: relative; left: 350px; top: 250px;">
     <h2>Please input the url of your blog</h2>
     <form action="~rhzhang/search_blog/" method="get">
         <input style="height:30px;font-size:9pt;" type="text" name="link" size="70">
         <input style="height:200px;font-size:14pt;" type="submit" value="Get!" onclick="document.write('Please waiting while loading...')">
+
+        <br><br><br>
+        <input type="range" min="10" max="200" value="100" step="1" onchange="showValue(this.value)" name="num_posts"/>
+        <span id="range">100</span>
+        <br>
+        (Number of posts to look at. More posts may take longer time) 
     </form>
+    
 </body>
 </html>

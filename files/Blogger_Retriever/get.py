@@ -53,8 +53,9 @@ def get(url):
     data = requests.get(url)
     return data.json()
 
-def get_blog_by_link(blog_url, latest):
+def get_blog_by_link(blog_url, latest, max_to_display=100):
 
+    MAX_TO_DISPLAY = max_to_display
     #ipdb.set_trace()
     if not re.match('http', blog_url):
         blog_url = 'http://' + blog_url
