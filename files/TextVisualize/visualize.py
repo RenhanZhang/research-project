@@ -14,7 +14,7 @@ from wordcloud import WordCloud
 import json
 from time import mktime
 from GChartWrapper import Radar
-
+from stanford_corenlp_pywrapper import CoreNLP
 dirname = os.path.dirname(os.path.abspath(__file__))
 
 def ling_ethnography(posts):
@@ -85,7 +85,17 @@ def silentremove(filename):
             raise # re-raise exception if a different error occured
 
 def word_cloud(posts):
-    text = ' '.join(post['content'] + ' ' + post['title'] for post in posts)
+    text = u' '.join(post['content'] for post in posts)
+
+    if os.path.isdir('/home/public/stanford-corenlp-full-2015-04-20/'):
+        proc = CoreNLP("pos", corenlp_jars=["/home/public/stanford-corenlp-full-2015-04-20/*"])
+        sentenses = proc.parse_doc(text)['sentenses']
+        
+        text = ''
+
+        for sentence in sentenses:
+            text += u' '.join(sentence['lemmas']) + u' '
+
     wordcloud = WordCloud(background_color="white", width=1200, height=900, margin=0)
     wordcloud.generate(text)
     fig = plt.gcf()
