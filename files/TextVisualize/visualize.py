@@ -89,7 +89,7 @@ def word_cloud(posts):
 
     if os.path.isdir('/home/public/stanford-corenlp-full-2015-04-20/'):
         proc = CoreNLP("pos", corenlp_jars=["/home/public/stanford-corenlp-full-2015-04-20/*"])
-        sentenses = proc.parse_doc(text)['sentenses']
+        sentenses = proc.parse_doc(text)['sentences']
         
         text = ''
 
