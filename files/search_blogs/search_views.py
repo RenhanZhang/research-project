@@ -53,8 +53,8 @@ def search_blog_by_link(request):
     ctx['wf_vs_week'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='week')
     ctx['wf_vs_day'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='day')
 
-    #personality_url = visualize.peronality(posts[-mask:])
-    #ctx['personality_url'] = personality_url
+    personality_url = visualize.peronality(posts[-mask:])
+    ctx['personality_url'] = personality_url
 
     ctx['word_cloud'] = visualize.word_cloud(posts[-mask:])
     
