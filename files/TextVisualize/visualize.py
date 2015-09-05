@@ -111,7 +111,7 @@ def word_cloud(posts):
     uri = urllib.quote(base64.b64encode(imgdata.buf))
     return uri
     
-def words_vs_time(posts, freq_words=[], group_by='week'):
+def words_vs_time(posts, freq_words=[], group_by='month'):
     '''
         similar to words_vs_time_beta, only difference is to group the posts in months
     '''

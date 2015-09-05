@@ -48,21 +48,19 @@ def search_blog_by_link(request):
     ctx = {'blog_name': blog['name'].replace("\'", '')}
 
     # visualization
-    wf_vs_time = visualize.words_vs_time(posts=posts[-mask:], freq_words=[])
-    ctx['wf_vs_time'] = wf_vs_time
+    ctx['wf_vs_month'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='month')
+    ctx['wf_vs_year'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='year')
+    ctx['wf_vs_week'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='week')
+    ctx['wf_vs_day'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='day')
 
     #personality_url = visualize.peronality(posts[-mask:])
     #ctx['personality_url'] = personality_url
 
-    wc_uri = visualize.word_cloud(posts[-mask:])
-    ctx['word_cloud'] = wc_uri
+    ctx['word_cloud'] = visualize.word_cloud(posts[-mask:])
     
-    le_classes = visualize.ling_ethnography(posts[-mask:])
-    ctx['le_classes'] = le_classes
+    ctx['le_classes'] = visualize.ling_ethnography(posts[-mask:])
 
-    ngram_model = visualize.ngram_model(posts[-mask:])
-    ctx['ngram_model'] = ngram_model
-
+    ctx['ngram_model'] = visualize.ngram_model(posts[-mask:])
 
     # update the database
     dbh.batch_update(profile, blog, new_posts)
