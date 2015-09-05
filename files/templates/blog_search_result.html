@@ -20,11 +20,12 @@
             title: 'Most Common Words in Your Recent Posts',
             subtitle: 'Word Frequency versus Time',
             hAxis: {titleTextStyle: {color: '#333'}, viewWindow:{}},
-            vAxis: {minValue: 0, format: '#'},
-            isStacked: true,
+            vAxis: {viewWindow:{min:0}},
+            //isStacked: true,
             height: 600,
+            curveType: 'function',
             legend: {position: 'top', maxLines: 3},
-            chartArea: {'width': '90%', 'height': '80%'},
+            chartArea: {'width': '95%', 'height': '80%'},
             //animation: {
               //duration: 1000,
               //easing: 'linear',
@@ -35,8 +36,8 @@
         function drawChart() {
 
           var data = google.visualization.arrayToDataTable(table);
-          var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
-          //var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+          //var chart = new google.visualization.AreaChart(document.getElementById('area_chart'));
+          var chart = new google.visualization.LineChart(document.getElementById('line_chart'));
           prevButton.disabled = true;
           nextButton.disabled = true;
           changeZoomButton.disabled = true;
@@ -86,7 +87,7 @@
 <body>
 <h1>You searched blog {{blog_name}}</h1>
     <img height="450" width="450" alt="embedded" src="{{personality_url|safe}}"/>
-    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+    <div id="line_chart" style="width: 900px; height: 500px;"></div>
     <br><br><br><br><br><br>
     <button type="button" id="b1" style="right: -350px; position: relative; font-size:14pt;">Earlier</button>
     <button type="button" id="b2" style="right: -350px; position: relative; font-size:14pt">More recent</button>
@@ -99,7 +100,7 @@
         <h3>{{ class }}</h3>
     {% endfor %}
     <br><br>
-    <h2>Most dominating word classes found in {{blog_name}}:</h2>
+    <h2>ngram_model</h2>
     <h3>{{ngram_model}}</h3>
             
 </body>

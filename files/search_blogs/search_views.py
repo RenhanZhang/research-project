@@ -15,10 +15,11 @@ def search_blog_by_link(request):
 
     if 'link' not in request.GET:
         return HttpResponse('Please input a url to the blog')
-    # ipdb.set_trace()
+
     dbh = BlogsDB.BlogsDB_Handler()
     blog_link = request.GET['link']
     MAX_TO_DISPLAY = int(request.GET['num_posts'])
+    MAX_TO_DISPLAY = min(MAX_TO_DISPLAY, 200)
 
     posts = dbh.get_posts_in_blog(blog_link)
 
@@ -44,14 +45,25 @@ def search_blog_by_link(request):
     
     mask = MAX_TO_DISPLAY if len(posts) > MAX_TO_DISPLAY else len(posts)
     
+    ctx = {'blog_name': blog['name'].replace("\'", '')}
+
     # visualization
-    wf_vs_time = visualize.words_vs_month(posts[-mask:])
-    #wf_vs_time = visualize.words_vs_time_beta(posts[-mask:])
-    personality_url = visualize.peronality(posts[-mask:])
+    wf_vs_time = visualize.words_vs_time(posts=posts[-mask:], freq_words=[])
+    ctx['wf_vs_time'] = wf_vs_time
+
+    #personality_url = visualize.peronality(posts[-mask:])
+    #ctx['personality_url'] = personality_url
+
     wc_uri = visualize.word_cloud(posts[-mask:])
+    ctx['word_cloud'] = wc_uri
     
     le_classes = visualize.ling_ethnography(posts[-mask:])
+    ctx['le_classes'] = le_classes
+
     ngram_model = visualize.ngram_model(posts[-mask:])
+    ctx['ngram_model'] = ngram_model
+
+
     # update the database
     dbh.batch_update(profile, blog, new_posts)
 
@@ -59,11 +71,9 @@ def search_blog_by_link(request):
     if next_page_token:
         proc = mp.Process(target=get.get_remain_posts,
                           args=(blog_link, blog['id'], next_page_token, get.MAX_TO_DISPLAY - len(posts), latest))
-
         proc.start()
 
-    ctx = Context({'posts': posts, 'blog_name': blog['name'].replace("\'", ''), 'ngram_model': ngram_model,\
-                   'wf_vs_time': wf_vs_time, 'word_cloud':wc_uri, 'le_classes':le_classes, 'personality_url': personality_url})
+    ctx = Context(ctx)
 
     dbh.close()
     return render(request, 'blog_search_result.html', ctx)

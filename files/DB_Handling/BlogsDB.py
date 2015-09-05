@@ -189,8 +189,9 @@ class BlogsDB_Handler:
 
     def update_profile_blogs_followed(self, profile):
         for blog_url in profile['blogs_following']:
-            stmt = u"insert into ignore profiles_blogs_followed values (%s, %s);"
+            stmt = u"insert ignore into profiles_blogs_followed values (%s, %s);"
             params = [profile['url'], blog_url]
+            # ipdb.set_trace()
 
             self.exec_stmt(stmt, params)
 
@@ -210,7 +211,7 @@ class BlogsDB_Handler:
 
     def exec_stmt(self, stmt, params):
         #time.sleep(0.1)
-        #print stmt
+        
         try:
             self.cur.execute(stmt, params)
             if len(self.cur.messages) > 0:
