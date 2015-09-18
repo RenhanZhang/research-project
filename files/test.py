@@ -30,7 +30,9 @@ for e in cur:
     #print text
     dic[e[0]] = dic.get(e[0], 0) + len(text.split())
     del e
-    print count
+    if count % 10000 == 0:
+      print count
+    
 
 
 with open('result_partial.csv', 'a') as f:
