@@ -11,6 +11,7 @@ EXEC = True
 
 BLOG_ATTR = ['url', 'description', 'name', 'published', 'updated', 'locale']
 POST_ATTR = ['url', 'title', 'content', 'published', 'author_url', 'location']
+
 class BlogsDB_Handler:
 
     def __init__(self):
