@@ -6,6 +6,7 @@ import profile_scraper
 from dateutil import parser
 import calendar
 from DB_Handling import BlogsDB
+import regex
 
 MAX_POSTS = 2500
 MAX_TO_DISPLAY = 100
@@ -41,7 +42,8 @@ def parse_post(post):
     post['updated'] = parse_time(post['updated'])
     # use beautiful soup to parse the content
     #ipdb.set_trace()
-    soup = BeautifulSoup(post['content'])
+    txt = regex.sub(ur'[^\p{Latin}]', u' ', post['content'])
+    soup = BeautifulSoup(txt.encode('latin-1'))
     post['content'] = soup.get_text()
 
     return post
@@ -86,7 +88,10 @@ def get_blog_by_ID(blog_id, latest):
 
         blog_info = get(get_blog_url)
 
-        for post in blog_info.get('items', None):
+        if 'items' not in blog_info:
+            break
+
+        for post in blog_info['items']:
 
             post = parse_post(post)
 
@@ -105,8 +110,8 @@ def get_blog_by_ID(blog_id, latest):
                            %(str(blog_id), api_key, next_page_token)
             if len(all_posts) >= MAX_TO_DISPLAY:
                 break
-
-    all_posts = sorted(all_posts, key=lambda x: x['published'])
+    if len(all_posts) > 0:
+        all_posts = sorted(all_posts, key=lambda x: x['published'])
     return profile_url, all_posts, next_page_token
 
 def get_remain_posts(blog_url, blog_id, init_pg_token, quota, earliest):

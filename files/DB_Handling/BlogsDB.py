@@ -16,7 +16,7 @@ class BlogsDB_Handler:
 
     def __init__(self):
         info = self.read_db_setting()
-        '''
+        
         self.conn = MySQLdb.connect(host = info['host'],
                                   user = info['user'],
                                   passwd = info['passwd'],
@@ -27,7 +27,9 @@ class BlogsDB_Handler:
                                     user='rhzhang',
                                     passwd='johnjohn',
                                     db='myblogs',
-                                    charset='utf8')
+                                    charset='utf8',
+                                    cursorclass=MySQLdb.cursors.SSCursor)
+        '''
         # ipdb.set_trace()
         self.cur = self.conn.cursor()
 
@@ -51,19 +53,19 @@ class BlogsDB_Handler:
 
     def batch_update(self, profile, blog, posts):
         #ipdb.set_trace()
-        print '\n\n-------------------blogs--------------------'
+        #print '\n\n-------------------blogs--------------------'
         self.update_blog(blog)
-        print '\n\n-------------------posts--------------------'
+        #print '\n\n-------------------posts--------------------'
         self.update_posts(posts)
-        print '\n\n-------------------blogs_posts--------------------'
+        #print '\n\n-------------------blogs_posts--------------------'
         self.update_blog_posts(blog['url'], posts)
 
-        if 'image_url' in profile:
-            print '\n\n-------------------profiles--------------------'
+        if profile and 'image_url' in profile:
+            #print '\n\n-------------------profiles--------------------'
             self.update_profile(profile)
-            print '\n\n-------------------profiles_blog--------------------'
+            #print '\n\n-------------------profiles_blog--------------------'
             self.update_profile_blogs(profile, blog)
-            print '\n\n-------------------profiles_blogs_followed--------------------'
+            #print '\n\n-------------------profiles_blogs_followed--------------------'
             self.update_profile_blogs_followed(profile)
         #self.conn.commit()
 

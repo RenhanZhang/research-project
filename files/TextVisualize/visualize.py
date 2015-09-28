@@ -15,6 +15,7 @@ import json
 from time import mktime
 from GChartWrapper import Radar
 from stanford_corenlp_pywrapper import CoreNLP
+
 dirname = os.path.dirname(os.path.abspath(__file__))
 
 def ling_ethnography(posts):

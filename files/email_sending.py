@@ -3,11 +3,11 @@ import re
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
-
-from ..search_blogs import search_views
+import datetime
+from search_blogs import search_views
 from bs4 import BeautifulSoup 
 from TextVisualize import visualize
-
+from DB_Handling import BlogsDB
 
 me = "litumich@gmail.com"
 MIN_NUM_WORD = 1000
@@ -27,13 +27,16 @@ def send_email(recepient, contents={}):
     with open(dirname + '/email_embedded.html', 'r') as f:
         html = f.read()
 
+    #html = re.sub('{', '{{', html)
+    #html = re.sub('}', '}}', html)
     html = html.format(blog_name=contents['blog_name'],
                        wf_vs_month=contents['wf_vs_month'],
                        wf_vs_year=contents['wf_vs_year'],
                        wf_vs_week=contents['wf_vs_week'],
-                       wf_vs_day=contents['wf_vs_day'],
-                       word_cloud=contents['word_cloud'])
-    
+                       wf_vs_day=contents['wf_vs_day'])
+    html = re.sub('{word_cloud}', contents['word_cloud'], html)
+    with open(str(datetime.datetime.now())+'.html', 'w') as f:
+        f.write(html)
     # Record the MIME types of both parts - text/plain and text/html.
     # part1 = MIMEText(text, 'plain')
     part2 = MIMEText(html, 'html')
@@ -77,7 +80,7 @@ def invite():
           select p.url, p.email, pb.blog_url, blogs.name 
           from profiles as p, profiles_blogs as pb, blogs 
           where p.url = pb.profile_url and pb.blog_url = blogs.url
-          and p.email is not null limit 500;
+          and p.email is not null limit 100;
           '''
 
 
@@ -117,6 +120,7 @@ def invite():
                 longest_blog = profiles_detail[profile_url]['blog_posts'][blog_url]
 
         if max_words < MIN_NUM_WORD:
+            print 'This profile has too few words'
             continue
         
         ctx = {'blog_name': profiles_detail[profile_url]['name'].replace("\'", '')}
@@ -127,6 +131,8 @@ def invite():
         ctx['wf_vs_week'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='week')
         ctx['wf_vs_day'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='day')
         ctx['word_cloud'] = visualize.word_cloud(longest_blog)
+
+        send_email('renhzhang2@gmail.com', ctx)
     
 invite()
 # send('renhzhang2@gmail.com')

@@ -1,14 +1,14 @@
 <html>
 <head>
-    <title>Search a blog</title>
+    <title>Something interesting</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
-    $(document).ready(function(){
-      google.load("visualization", "1", {'packages':["corechart"], 'callback':googleLoaded});
+    $(document).ready(function(){{
+      google.load("visualization", "1", {{'packages':["corechart"], 'callback':googleLoaded}});
       //google.setOnLoadCallback(drawChart);
       
-      function googleLoaded(){
+      function googleLoaded(){{
         var prevButton = document.getElementById('b1');
         var nextButton = document.getElementById('b2');
         var changeZoomButton = document.getElementById('b3');
@@ -24,25 +24,25 @@
         var table = table_day;
 
         var MAX=10;
-        var options = {
+        var options = {{
             title: 'Most Common Words in Your Recent Posts (grouped in days)',
             subtitle: 'Word Frequency versus Time',
-            hAxis: {titleTextStyle: {color: '#333'}, viewWindow:{}},
-            vAxis: {viewWindow:{min:0}},
+            hAxis: {{titleTextStyle: {{color: '#333'}}, viewWindow:{{}}}},
+            vAxis: {{viewWindow:{{min:0}}}},
             //isStacked: true,
             height: 600,
             curveType: 'function',
-            legend: {position: 'top', maxLines: 3},
-            chartArea: {'width': '95%', 'height': '80%'},
-            //animation: {
+            legend: {{position: 'top', maxLines: 3}},
+            chartArea: {{'width': '95%', 'height': '80%'}},
+            //animation: {{
               //duration: 1000,
               //easing: 'linear',
               //startup:true
-            //},
+            //}},
             
-        };
+        }};
 
-        function drawChart() {
+        function drawChart() {{
           var data = google.visualization.arrayToDataTable(table);
           //var chart = new google.visualization.AreaChart(document.getElementById('area_chart'));
           var chart = new google.visualization.LineChart(document.getElementById('line_chart'));
@@ -50,76 +50,77 @@
           nextButton.disabled = true;
           changeZoomButton.disabled = true;
           google.visualization.events.addListener(chart, 'ready',
-              function() {
+              function() {{
                 prevButton.disabled = options.hAxis.viewWindow.min <= 0 || !zoomed;
                 nextButton.disabled = options.hAxis.viewWindow.max >= table.length || !zoomed;
                 changeZoomButton.disabled = false;
-              });
+              }});
           chart.draw(data, options);
-        }
+        }}
         
-        prevButton.onclick = function() {
-          if (options.hAxis.viewWindow.min > 1){
+        prevButton.onclick = function() {{
+          if (options.hAxis.viewWindow.min > 1){{
               options.hAxis.viewWindow.min -= 1;
               options.hAxis.viewWindow.max -= 1;
               drawChart();
-          }
+          }}
           
-        }
+        }}
 
-        nextButton.onclick = function() {
-          if (options.hAxis.viewWindow.max < table.length - 1){
+        nextButton.onclick = function() {{
+          if (options.hAxis.viewWindow.max < table.length - 1){{
               options.hAxis.viewWindow.min += 1;
               options.hAxis.viewWindow.max += 1;
               drawChart();
-          }
+          }}
 
-        }
+        }}
         
         var span = Math.min(20, table.length/4);
 
-        changeZoomButton.onclick = function() {
-          if (zoomed) {
+        changeZoomButton.onclick = function() {{
+          if (zoomed) {{
             //options.hAxis.viewWindow.min = 0;
             //options.hAxis.viewWindow.max = 5;
-            options.hAxis.viewWindow = {}
-          } else {
+            options.hAxis.viewWindow = {{}}
+          }} else {{
             options.hAxis.viewWindow.min = table.length - span;
             options.hAxis.viewWindow.max = table.length - 1;
-            //options.hAxis.viewWindow = {}
-          }
+            //options.hAxis.viewWindow = {{}}
+          }}
           zoomed = !zoomed;
           drawChart();
-        }
+        }}
 
-        groupTag.onchange = function(){
-          if(groupTag.value == 1){
+        groupTag.onchange = function(){{
+          if(groupTag.value == 1){{
             options.title = 'Most Common Words in Your Recent Posts (grouped in years)';
             table = table_year;
-          } else if (groupTag.value == 2){
+          }} else if (groupTag.value == 2){{
             options.title = 'Most Common Words in Your Recent Posts (grouped in months)';
             table = table_month;
-          } else if (groupTag.value == 3){
+          }} else if (groupTag.value == 3){{
             options.title = 'Most Common Words in Your Recent Posts (grouped in weeks)';
             table = table_week;
-          } else{
+          }} else{{
             options.title = 'Most Common Words in Your Recent Posts (grouped in days)';
             table = table_day;
-          }
+          }}
           zoomed = false;
-          options.hAxis.viewWindow = {};
+          options.hAxis.viewWindow = {{}};
           drawChart();
-        }
+        }}
         
         drawChart();
-      }
-    });
+      }}
+    }});
       
     </script>
 </head>
 <body>
-<h1>You searched blog {blog_name}</h1>
-
+<h1>Your blog {blog_name}</h1>
+    <div id="line_chart" style="width: 900px; height: 500px;"></div>
+    <br/><br/><br/><br/><br/><br/>
     <div style="left: 120px; position: relative; font-size:14pt;">
         Group the posts by
         <select id="select" style="font-size:14pt;">
@@ -138,7 +139,7 @@
     <br><br><br><br><br><br><br>
 
 
-    <img height="600" width="800" alt="embedded" src="data:image/png;base64,{word_cloud}"/>
+    <img height="600" width="800" alt="embedded" src="data:image/png;base64,{{word_cloud}}"/>
             
 </body>
 </html>
