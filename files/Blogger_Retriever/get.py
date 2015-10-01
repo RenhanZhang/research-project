@@ -6,7 +6,6 @@ import profile_scraper
 from dateutil import parser
 import calendar
 from DB_Handling import BlogsDB
-import regex
 
 MAX_POSTS = 2500
 MAX_TO_DISPLAY = 100
@@ -42,7 +41,7 @@ def parse_post(post):
     post['updated'] = parse_time(post['updated'])
     # use beautiful soup to parse the content
     #ipdb.set_trace()
-    txt = regex.sub(ur'[^\p{Latin}]', u' ', post['content'])
+    txt = re.sub(ur'[^\p{Latin}]', u' ', post['content'])
     soup = BeautifulSoup(txt.encode('latin-1'))
     post['content'] = soup.get_text()
 

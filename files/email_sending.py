@@ -9,7 +9,10 @@ from bs4 import BeautifulSoup
 from TextVisualize import visualize
 from DB_Handling import BlogsDB
 
-me = "litumich@gmail.com"
+with open('email_account.txt', 'r') as f:
+    username = f.readline().split()[1]
+    pwd = f.readline().split()[1]
+
 MIN_NUM_WORD = 1000
 dirname = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,22 +24,22 @@ def send_email(recepient, contents={}):
     msg['From'] = me
     msg['To'] = recepient
 
-    # text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
-
     # load the html body
     with open(dirname + '/email_embedded.html', 'r') as f:
         html = f.read()
 
-    #html = re.sub('{', '{{', html)
-    #html = re.sub('}', '}}', html)
     html = html.format(blog_name=contents['blog_name'],
                        wf_vs_month=contents['wf_vs_month'],
                        wf_vs_year=contents['wf_vs_year'],
                        wf_vs_week=contents['wf_vs_week'],
                        wf_vs_day=contents['wf_vs_day'])
     html = re.sub('{word_cloud}', contents['word_cloud'], html)
+
+    '''
     with open(str(datetime.datetime.now())+'.html', 'w') as f:
         f.write(html)
+    '''
+    
     # Record the MIME types of both parts - text/plain and text/html.
     # part1 = MIMEText(text, 'plain')
     part2 = MIMEText(html, 'html')
@@ -51,10 +54,8 @@ def send_email(recepient, contents={}):
     server = smtplib.SMTP('smtp.gmail.com:587')
     server.ehlo()
     server.starttls()
-    username = me
-    password = 'zhang647'
-    server.login(username,password)
-    server.sendmail(me, recepient, msg.as_string())
+    server.login(username,pwd)
+    server.sendmail(username, recepient, msg.as_string())
     server.quit()
     # sendmail function takes 3 arguments: sender's address, recipient's address
     # and message to send - here it is sent as one string.

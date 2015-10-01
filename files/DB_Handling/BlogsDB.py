@@ -15,6 +15,8 @@ POST_ATTR = ['url', 'title', 'content', 'published', 'author_url', 'location']
 class BlogsDB_Handler:
 
     def __init__(self):
+
+        # read the account setting (account, passwords etc.)
         info = self.read_db_setting()
         
         self.conn = MySQLdb.connect(host = info['host'],
@@ -22,14 +24,6 @@ class BlogsDB_Handler:
                                   passwd = info['passwd'],
                                   db = info['db_name'],
                                   charset='utf8')
-        '''
-        self.conn = MySQLdb.connect(host='lit04.eecs.umich.edu',
-                                    user='rhzhang',
-                                    passwd='johnjohn',
-                                    db='myblogs',
-                                    charset='utf8',
-                                    cursorclass=MySQLdb.cursors.SSCursor)
-        '''
         # ipdb.set_trace()
         self.cur = self.conn.cursor()
 
