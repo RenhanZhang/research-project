@@ -206,15 +206,14 @@ class BlogsDB_Handler:
         else:
             dictionary[attr] = 'NULL'
 
-    def exec_stmt(self, stmt, params):
+    def exec_stmt(self, stmt, params=[]):
         #time.sleep(0.1)
         
         try:
             self.cur.execute(stmt, params)
             if len(self.cur.messages) > 0:
-                print '----------------------Error--------------------'
                 print stmt
-                print '-------------------\n%s' %self.cur.messages
+                print '----------------------------------\n%s' %self.cur.messages
             self.conn.commit()
 
         except MySQLdb.Error as e:
@@ -224,3 +223,7 @@ class BlogsDB_Handler:
                 print "MySQL Error [%d]: %s" % (e.args[0], e.args[1])
             except IndexError:
                 print "MySQL Error: %s" % str(e)
+
+    def exec_and_get(self, stmt, params):
+        exec_stmt(stmt, params)
+        return self.cur.fetchall()

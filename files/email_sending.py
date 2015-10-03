@@ -1,9 +1,6 @@
-import smtplib
-import re
+import re, os, smtplib, datetime, string, random, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import os
-import datetime
 from search_blogs import search_views
 from bs4 import BeautifulSoup 
 from TextVisualize import visualize
@@ -61,8 +58,22 @@ def send_email(recepient, contents={}):
     # and message to send - here it is sent as one string.
     # server.sendmail(me, you, msg.as_string())
 
+def id_gen(length=8):
+    dbh = BlogsDB.BlogsDB_Handler()
+
+    while True:
+        token = ''.join(random.choice(chars) for _ in range(length))
+
+        cmd = '''
+                  select profile_url 
+                  from profiles_surveys 
+                  where code = %s;
+              '''
+        if len(dbh.exec_and_get(cmd, [token])) == 0:
+            return token
+
 def invite():
-    dbh1 = BlogsDB.BlogsDB_Handler() # used to get all the valid profiles and necessary info
+    dbh1 = BlogsDB.BlogsDB_Handler()  # used to get all the valid profiles and necessary info
     cmd = '''
           select p.url, p.email, posts.content, blogs_posts.blog_url from 
           (select url, email from profiles 
@@ -80,16 +91,17 @@ def invite():
     cmd = '''
           select p.url, p.email, pb.blog_url, blogs.name 
           from profiles as p, profiles_blogs as pb, blogs 
-          where p.url = pb.profile_url and pb.blog_url = blogs.url
-          and p.email is not null limit 100;
+          where p.url = pb.profile_url 
+          and pb.blog_url = blogs.url
+          and p.email is not null
+          and p.url not in (select url from invalid_profiles) 
+          and p.url not in (select profile_url from profiles_surveys)
+          limit 100;
           '''
-
-
-    dbh1.exec_stmt(stmt=cmd, params={})
 
     profiles_detail = {} 
 
-    for e in dbh1.cur:
+    for e in dbh1.exec_and_get(stmt=cmd):
         profile_url = e[0]
         email = e[1]
         blog_url = e[2]
@@ -121,6 +133,8 @@ def invite():
                 longest_blog = profiles_detail[profile_url]['blog_posts'][blog_url]
 
         if max_words < MIN_NUM_WORD:
+            stmt = 'insert into invalid_profiles values(%s);'
+            dbh1.exec_stmt(stmt, [profile_url])
             print 'This profile has too few words'
             continue
         
@@ -134,6 +148,10 @@ def invite():
         ctx['word_cloud'] = visualize.word_cloud(longest_blog)
 
         send_email('renhzhang2@gmail.com', ctx)
+        token = id_gen()
+        ctx['id'] = token
+        stmt = 'insert into profiles_surveys(profile_url, code) values(%s, %s);'
+        dbh1.exec_stmt(stmt, [profile_url, token])
     
 invite()
 # send('renhzhang2@gmail.com')
