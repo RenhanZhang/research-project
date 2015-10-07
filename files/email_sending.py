@@ -41,10 +41,6 @@ def send_email(recepient, contents={}):
     # part1 = MIMEText(text, 'plain')
     part2 = MIMEText(html, 'html')
 
-    # Attach parts into message container.
-    # According to RFC 2046, the last part of a multipart message, in this case
-    # the HTML message, is best and preferred.
-    # msg.attach(part1)
     msg.attach(part2)
 
     # Send the message via local SMTP server.
@@ -54,10 +50,7 @@ def send_email(recepient, contents={}):
     server.login(username,pwd)
     server.sendmail(username, recepient, msg.as_string())
     server.quit()
-    # sendmail function takes 3 arguments: sender's address, recipient's address
-    # and message to send - here it is sent as one string.
-    # server.sendmail(me, you, msg.as_string())
-
+    
 def id_gen(length=8):
     dbh = BlogsDB.BlogsDB_Handler()
 
@@ -96,7 +89,7 @@ def invite():
           and p.email is not null
           and p.url not in (select url from invalid_profiles) 
           and p.url not in (select profile_url from profiles_surveys)
-          limit 100;
+          limit 10;
           '''
 
     profiles_detail = {} 
