@@ -1,4 +1,0 @@
-host=lit.eecs.umich.edu
-user=rhzhang
-passwd=renhan
-db_name=myblogs

@@ -41,8 +41,7 @@ def parse_post(post):
     post['updated'] = parse_time(post['updated'])
     # use beautiful soup to parse the content
     #ipdb.set_trace()
-    txt = re.sub(ur'[^\p{Latin}]', u' ', post['content'])
-    soup = BeautifulSoup(txt.encode('latin-1'))
+    soup = BeautifulSoup(post['content'].encode('ascii', 'ignore'))
     post['content'] = soup.get_text()
 
     return post

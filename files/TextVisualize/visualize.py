@@ -87,7 +87,8 @@ def silentremove(filename):
 
 def word_cloud(posts):
     text = u' '.join(post['content'] for post in posts)
-
+    
+    '''
     if os.path.isdir('/home/public/stanford-corenlp-full-2015-04-20/'):
         proc = CoreNLP("pos", corenlp_jars=["/home/public/stanford-corenlp-full-2015-04-20/*"])
         sentenses = proc.parse_doc(text)['sentences']
@@ -96,6 +97,7 @@ def word_cloud(posts):
 
         for sentence in sentenses:
             text += u' '.join(sentence['lemmas']) + u' '
+    '''
 
     wordcloud = WordCloud(background_color="white", width=1200, height=900, margin=0)
     wordcloud.generate(text)
@@ -194,7 +196,7 @@ def peronality(posts):
     }
 
     cont_path = pkg_path + '/content%s.txt' % temp_id
-    # write the text to a temp file
+    # write the text to cont_path
     with codecs.open(cont_path, 'wb', encoding='utf8') as f:
         f.write(text)
         # prepare the arff data for prediction
@@ -205,7 +207,7 @@ def peronality(posts):
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
     # remove the content file as we have the arff file now
-    silentremove(cont_path)
+    # silentremove(cont_path)
 
     for trait in traits:
         print trait
@@ -222,7 +224,7 @@ def peronality(posts):
             result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
-        silentremove(arff_path)
+        # silentremove(arff_path)
 
         score = float(result.split()[-2])
         scores.append(score)

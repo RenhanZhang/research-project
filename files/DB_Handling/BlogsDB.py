@@ -225,5 +225,5 @@ class BlogsDB_Handler:
                 print "MySQL Error: %s" % str(e)
 
     def exec_and_get(self, stmt, params):
-        exec_stmt(stmt, params)
+        self.exec_stmt(stmt, params)
         return self.cur.fetchall()
