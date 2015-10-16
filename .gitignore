@@ -7,5 +7,6 @@ files/TextVisualize/LinguisticEthnography/EthnolingClasses.pl
 *.pyc
 files/DB_Handling/db_account.txt
 files/clean_post.py
-files/email_account.txt 
+files/emails/email_account.txt 
+files/Qualtrics/account.txt
 

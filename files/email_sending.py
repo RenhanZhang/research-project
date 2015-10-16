@@ -36,9 +36,9 @@ def partial_result(blog_link):
     if blog is None:
         return {}
     
-    if profile and 'url' in profile and 'image_url' not in profile:
+    # if profile and 'url' in profile and 'image_url' not in profile:
         # save profile and its blogs when failing to scrape it right now
-        save_profile(profile['url'], blog['url'])
+        # save_profile(profile['url'], blog['url'])
 
     posts.extend(new_posts)
 
@@ -94,12 +94,10 @@ def send_email(recepient, contents={}):
         f.write(html)
     '''
     
-    # Record the MIME types of both parts - text/plain and text/html.
-    # part1 = MIMEText(text, 'plain')
-    part2 = MIMEText(html, 'html')
-
-    msg.attach(part2)
-
+    html_msg = MIMEText(html, 'html')
+    plain_msg = MIMEText(html, 'plain')
+    # msg.attach(html_msg)
+    msg.attach(plain_msg)
     # Send the message via local SMTP server.
     server = smtplib.SMTP('smtp.gmail.com:587')
     server.ehlo()
@@ -164,7 +162,7 @@ def invite():
           and p.email is not null
           and p.url not in (select url from invalid_profiles) 
           and p.url not in (select profile_url from profiles_tokens)
-          limit 10;
+          limit 1;
           '''
     
     #ipdb.set_trace()
@@ -216,7 +214,7 @@ def invite():
         token = get_token(profile_url)
         ctx['id'] = token
         ctx['surveys_taken'] = ', '.join(qualtrics_get.surveys_taken(profile_url)) 
-        send_email('renhzhang2@gmail.com', ctx) 
+        send_email('renhzhang3@126.com', ctx) 
         
 invite()
 # send('renhzhang2@gmail.com')

@@ -55,8 +55,8 @@
                 nextButton.disabled = options.hAxis.viewWindow.max >= table.length || !zoomed;
                 changeZoomButton.disabled = false;
               }});
-          #chart.draw(data, options);
           var chart_div = document.getElementById('line_chart');
+          chart.draw(data, options);
           chart_div.innerHTML = '<img src="' + chart.getImageURI() + '">';
           console.log(chart_div.innerHTML)
         }}
