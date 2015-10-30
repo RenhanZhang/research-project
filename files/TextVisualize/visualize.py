@@ -181,6 +181,143 @@ def ngram_model(posts, N=3):
     silentremove(contents_fname)
     return model
 
+def compute_personality(posts):
+    # ipdb.set_trace()
+    print 'personality'
+    pkg_path = dirname + '/personality_package'
+    weka_path = dirname + '/weka-3-7-12/weka.jar'
+    traits = ['con', 'ope', 'neu', 'agr', 'ext']
+    text = ' '.join([post['content'].encode('ascii', errors='ignore') for post in posts])
+    temp_id = str(uuid.uuid4())
+    scores = []         # store the scores of different personality traits
+    abbrev = {
+        'con': 'conscientiousness', 'ope': 'openness', 'neu': 'emotional-stability', 
+        'agr': 'agreeableness', 'ext': 'extraversion', 
+    }
+
+    cont_path = pkg_path + '/content%s.txt' % temp_id
+    # write the text to cont_path
+    with codecs.open(cont_path, 'wb', encoding='utf8') as f:
+        f.write(text)
+        # prepare the arff data for prediction
+        try:
+            arff_data = subprocess.check_output(['python', pkg_path + '/text2arff.py', cont_path],
+                                             stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+
+    # remove the content file as we have the arff file now
+    silentremove(cont_path)
+
+    for trait in traits:
+        print trait
+        arff = arff_data.replace('target', trait)
+
+        arff_path = pkg_path + '/' + temp_id + trait + '.arff'
+        with codecs.open(arff_path, 'wb', encoding='utf8') as f:
+            f.write(arff)
+
+        cmd = ['bash', pkg_path + '/predict.sh', weka_path, 'functions.LinearRegression', 
+               arff_path,pkg_path + '/models/%s.linear-regression.model' % abbrev[trait]]
+
+        try:
+            result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+        # silentremove(arff_path)
+
+        score = float(result.split()[-2])
+        scores.append(score)
+    
+    # ensure scores are in (0,5) range
+    scores = [min(5, x) for x in scores]
+    scores = [max(0, x) for x in scores]
+    
+    # convert emotional unstability to stability
+    avg = [3.48682181564, 3.78697472093, 2.77373519534, 3.5433602257, 3.57498918951]
+    scores[2] = 2 * avg[2] - scores[2]
+    
+    return scores
+
+   
+
+def get_personality(profile_url, posts, dbh):
+    
+    # step 1: try to get the big_5 scores inferred from the blog posts
+    #         this information can be already computed and stored in the db 
+    stmt = 'select conscientiousness, openness, neuroticism, agreeableness, extraversion from big_5_from_blogs where profile_url = %s;'
+    
+    result = dbh.exec_and_get(stmt, [profile_url])
+
+    if result:
+        scores_from_blogs = result[0]
+    else:
+        # if it's not in the db, compute it and add it to the db
+        scores_from_blogs = compute_personality(posts) 
+        
+        stmt = '''
+               insert into big_5_from_blogs (profile_url, conscientiousness, openness, neuroticism, agreeableness, extraversion)
+               values(%s, %s, %s, %s, %s, %s);
+               '''
+        params = [profile_url]
+        params.extend(scores_from_blogs)
+
+        dbh.exec_and_get(stmt, params) 
+    
+    # step 2: get the personality score obstained from the surveys in the db
+    scores_from_survey = None
+
+    stmt = 'select conscientiousness, openness, neuroticism, agreeableness, extraversion from big_5_from_survey where profile_url = %s;'
+
+    result = dbh.exec_and_get(stmt, [profile_url])
+
+    if result:
+        scores_from_blogs = result[0]
+
+    # step 3: draw the chart
+    avg = [3.48682181564, 3.78697472093, 2.77373519534, 3.5433602257, 3.57498918951]
+
+    # add an extra term so tail meets head in the radar chart
+    scores_from_blogs.append(scores_from_blogs[0])
+    avg.append(avg[0])
+    data = [scores_from_blogs, avg]
+
+    if scores_from_survey:
+        scores_from_survey.append(scores_from_survey[0])
+        data.append(scores_from_survey)
+
+    G = Radar(data, encoding='text')  
+    G.title('5-Traits Personality')
+    G.type('rs')
+    G.size(500,500)
+    G.color('blue','CC3366')
+    G.line(2,1,0)
+    G.line(2,1,0)
+    G.axes(['y', 'x'])
+    G.axes.range(0, 0, 5, 1)
+    G.label(1, 2, 3, 4, 5)
+    name = 'You'
+    if 'author' in posts[0] and 'displayName' in posts[0]['author']:
+        name = posts[0]['author']['displayName']
+
+    if scores_from_survey:
+        G.legend('Inferred from your blogs', 'Average', 'Inferred from the survey you took')
+    else:
+        G.legend('Inferred from your blogs', 'Average')
+
+    G.legend('You', 'Average')
+    G.label('conscientious', 'open', 'emotional-stable', 'agreeable', 'extraverse')
+
+    max_score = max(scores_from_blogs)
+    if scores_from_survey:
+        max_score = max(max_score, max(scores_from_survey))
+    G.scale(0,max_score)
+
+    G.margin(10, 10, 10, 0)
+    #G.url += '&chdlp=b'
+    return G.url + '&chxs=0,989898,12|1,000000,12,0'
+
+'''
 def peronality(posts):
     # ipdb.set_trace()
     print 'personality'
@@ -265,7 +402,7 @@ def peronality(posts):
     G.margin(10, 10, 10, 0)
     #G.url += '&chdlp=b'
     return G.url + '&chxs=0,989898,12|1,000000,12,0'
-
+'''
 
 
 

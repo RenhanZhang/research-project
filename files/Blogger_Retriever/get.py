@@ -74,6 +74,7 @@ def get_blog_by_link(blog_url, latest, max_to_display=100):
     profile = None
     if profile_url:
         profile = profile_scraper.scrape_profile(profile_url)
+    # ipdb.set_trace()
     return profile, blog_summary, posts, next_page_token
 
 def get_blog_by_ID(blog_id, latest):

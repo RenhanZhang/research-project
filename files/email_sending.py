@@ -83,10 +83,8 @@ def send_email(recepient, contents={}):
 
     html = html.format(blog_name=contents['blog_name'],
                        surveys_taken=contents['surveys_taken'],
-                       wf_vs_month=contents['wf_vs_month'],
-                       wf_vs_year=contents['wf_vs_year'],
-                       wf_vs_week=contents['wf_vs_week'],
-                       wf_vs_day=contents['wf_vs_day'])
+                       token=contents['id'],
+                       )
     html = re.sub('{word_cloud}', contents['word_cloud'], html)
 
     '''
@@ -96,8 +94,8 @@ def send_email(recepient, contents={}):
     
     html_msg = MIMEText(html, 'html')
     plain_msg = MIMEText(html, 'plain')
-    # msg.attach(html_msg)
-    msg.attach(plain_msg)
+    msg.attach(html_msg)
+    # msg.attach(plain_msg)
     # Send the message via local SMTP server.
     server = smtplib.SMTP('smtp.gmail.com:587')
     server.ehlo()
@@ -162,7 +160,7 @@ def invite():
           and p.email is not null
           and p.url not in (select url from invalid_profiles) 
           and p.url not in (select profile_url from profiles_tokens)
-          limit 1;
+          limit 5;
           '''
     
     #ipdb.set_trace()
@@ -187,6 +185,9 @@ def invite():
     for profile_url in profiles_detail:
         longest_blog = []     # the blog of the most words of the user
         max_words = -1        # number of words in longest_blog
+
+        all_posts = []
+
         for blog_url in profiles_detail[profile_url]['blog_posts']:
             num_words = 0       # number of words in this blog
             for post in profiles_detail[profile_url]['blog_posts'][blog_url]:
@@ -194,6 +195,9 @@ def invite():
                 soup = BeautifulSoup(txt)
                 post['content'] = soup.get_text()               # parse the post in case of raw html format
                 num_words += len(post['content'].split())
+
+                all_posts.append(post)
+
             if num_words > max_words:
                 max_words = num_words
                 longest_blog = profiles_detail[profile_url]['blog_posts'][blog_url]
@@ -205,16 +209,21 @@ def invite():
             continue
         
         ctx = {'blog_name': profiles_detail[profile_url]['name'].replace("\'", '')}
-        ctx['wf_vs_month'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='month')
-        ctx['wf_vs_year'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='year')
-        ctx['wf_vs_week'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='week')
-        ctx['wf_vs_day'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='day')
+        #ctx['wf_vs_month'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='month')
+        #ctx['wf_vs_year'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='year')
+        #ctx['wf_vs_week'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='week')
+        #ctx['wf_vs_day'] = visualize.words_vs_time(posts=longest_blog, freq_words=[], group_by='day')
         ctx['word_cloud'] = visualize.word_cloud(longest_blog)
 
         token = get_token(profile_url)
+
         ctx['id'] = token
         ctx['surveys_taken'] = ', '.join(qualtrics_get.surveys_taken(profile_url)) 
-        send_email('renhzhang3@126.com', ctx) 
+
+        # compute the big_5 score before sending email
+        visualize.get_personality(profile_url, all_posts, dbh1)
+
+        send_email('renhzhang2@gmail.com', ctx) 
         
 invite()
 # send('renhzhang2@gmail.com')
