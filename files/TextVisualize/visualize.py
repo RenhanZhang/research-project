@@ -224,7 +224,7 @@ def compute_personality(posts):
             result = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
-        # silentremove(arff_path)
+        silentremove(arff_path)
 
         score = float(result.split()[-2])
         scores.append(score)
