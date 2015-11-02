@@ -162,7 +162,15 @@ def invite():
           and p.url not in (select profile_url from profiles_tokens)
           limit 5;
           '''
+    cmd = '''
+          select p.url, p.email, pb.blog_url, blogs.name 
+          from profiles as p, profiles_blogs as pb, blogs 
+          where p.url = pb.profile_url 
+          and pb.blog_url = blogs.url
+          and p.url = 'http://www.blogger.com/profile/00420783423172718178';
+          '''
     
+
     #ipdb.set_trace()
     profiles_detail = {} 
 
@@ -219,7 +227,7 @@ def invite():
 
         ctx['id'] = token
         ctx['surveys_taken'] = ', '.join(qualtrics_get.surveys_taken(profile_url)) 
-
+        
         # compute the big_5 score before sending email
         visualize.get_personality(profile_url, all_posts, dbh1)
 

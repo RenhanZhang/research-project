@@ -239,7 +239,6 @@ def compute_personality(posts):
     
     return scores
 
-   
 
 def get_personality(profile_url, posts, dbh):
     
@@ -250,7 +249,7 @@ def get_personality(profile_url, posts, dbh):
     result = dbh.exec_and_get(stmt, [profile_url])
 
     if result:
-        scores_from_blogs = result[0]
+        scores_from_blogs = list(result[0])
     else:
         # if it's not in the db, compute it and add it to the db
         scores_from_blogs = compute_personality(posts) 
@@ -266,13 +265,13 @@ def get_personality(profile_url, posts, dbh):
     
     # step 2: get the personality score obstained from the surveys in the db
     scores_from_survey = None
-
+    # ipdb.set_trace()
     stmt = 'select conscientiousness, openness, neuroticism, agreeableness, extraversion from big_5_from_survey where profile_url = %s;'
 
     result = dbh.exec_and_get(stmt, [profile_url])
 
     if result:
-        scores_from_blogs = result[0]
+        scores_from_survey = list(result[0])
 
     # step 3: draw the chart
     avg = [3.48682181564, 3.78697472093, 2.77373519534, 3.5433602257, 3.57498918951]
@@ -283,13 +282,14 @@ def get_personality(profile_url, posts, dbh):
     data = [scores_from_blogs, avg]
 
     if scores_from_survey:
+        # assert 1==2
         scores_from_survey.append(scores_from_survey[0])
         data.append(scores_from_survey)
 
     G = Radar(data, encoding='text')  
     G.title('5-Traits Personality')
     G.type('rs')
-    G.size(500,500)
+    G.size(540,540)
     G.color('blue','CC3366')
     G.line(2,1,0)
     G.line(2,1,0)
@@ -301,11 +301,11 @@ def get_personality(profile_url, posts, dbh):
         name = posts[0]['author']['displayName']
 
     if scores_from_survey:
-        G.legend('Inferred from your blogs', 'Average', 'Inferred from the survey you took')
+        G.legend('from blogs', 'Average', 'from the survey')
+        G.color('blue', 'CC3366', 'black')
     else:
-        G.legend('Inferred from your blogs', 'Average')
+        G.legend('from blogs', 'Average')
 
-    G.legend('You', 'Average')
     G.label('conscientious', 'open', 'emotional-stable', 'agreeable', 'extraverse')
 
     max_score = max(scores_from_blogs)
@@ -405,7 +405,8 @@ def peronality(posts):
 '''
 
 
-
+if __name__ == '__main__':
+    print 'visualize module'
 
 
 

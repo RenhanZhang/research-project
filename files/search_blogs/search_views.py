@@ -11,56 +11,6 @@ import multiprocessing as mp
 
 dirname = os.path.dirname(os.path.abspath(__file__))
 
-def partial_result(blog_link):
-    dbh = BlogsDB.BlogsDB_Handler()
-    MAX_TO_DISPLAY = 100
-
-    posts = dbh.get_posts_in_blog(blog_link)
-
-    # ipdb.set_trace()
-    if len(posts) == 0:
-        latest = -1
-    else:
-        latest = posts[-1]['published']
-
-    profile, blog, new_posts, next_page_token = get.get_blog_by_link(blog_link, latest, MAX_TO_DISPLAY)
-
-    if blog is None:
-        return {}
-    
-    if profile and 'url' in profile and 'image_url' not in profile:
-        # save profile and its blogs when failing to scrape it right now
-        save_profile(profile['url'], blog['url'])
-
-    posts.extend(new_posts)
-
-    if len(posts) == 0:
-        return {}
-    
-    '''
-    mask = MAX_TO_DISPLAY if len(posts) > MAX_TO_DISPLAY else len(posts)
-    ctx = {'blog_name': blog['name'].replace("\'", '')}
-    # visualization
-    ctx['wf_vs_month'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='month')
-    ctx['wf_vs_year'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='year')
-    ctx['wf_vs_week'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='week')
-    ctx['wf_vs_day'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='day')
-    ctx['word_cloud'] = visualize.word_cloud(posts[-mask:])
-    '''
-
-    # update the database
-    dbh.batch_update(profile, blog, new_posts)
-
-    # spawn a parallel process the retrieve the remaining posts
-    if next_page_token:
-        proc = mp.Process(target=get.get_remain_posts,
-                          args=(blog_link, blog['id'], next_page_token, get.MAX_TO_DISPLAY - len(posts), latest))
-        proc.start()
-
-    dbh.close()
-    return posts
-
-
 def search_blog_by_link(request):
 
     if 'link' not in request.GET:
@@ -81,6 +31,7 @@ def search_blog_by_link(request):
 
     profile, blog, new_posts, next_page_token = get.get_blog_by_link(blog_link, latest, MAX_TO_DISPLAY)
 
+    #assert 1==2
     if blog is None:
         return HttpResponse('Please input a valid Blogger url')
     
@@ -102,8 +53,13 @@ def search_blog_by_link(request):
     ctx['wf_vs_year'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='year')
     ctx['wf_vs_week'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='week')
     ctx['wf_vs_day'] = visualize.words_vs_time(posts=posts[-mask:], freq_words=[], group_by='day')
+    
+    '''
+    with open(dirname + '/debug.txt', 'w') as f:
+        f.write(posts[0]['author']['url'])
+    '''
+    personality_url = visualize.get_personality(posts[0]['author_url'], posts[-mask:], dbh)
 
-    personality_url = visualize.get_peronality(posts[0]['author']['url'], posts[-mask:], dbh)
     ctx['personality_url'] = personality_url
 
     ctx['word_cloud'] = visualize.word_cloud(posts[-mask:])

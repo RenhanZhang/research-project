@@ -1,11 +1,13 @@
-import requests
+import requests, os
 from bs4 import BeautifulSoup
 import re
-import ipdb
 import profile_scraper
 from dateutil import parser
 import calendar
 from DB_Handling import BlogsDB
+import logging
+
+dirname = os.path.dirname(os.path.abspath(__file__))
 
 MAX_POSTS = 2500
 MAX_TO_DISPLAY = 100
@@ -62,13 +64,19 @@ def get_blog_by_link(blog_url, latest, max_to_display=100):
 
     url = 'https://www.googleapis.com/blogger/v3/blogs/byurl?url=' + blog_url + '&key=' + api_key
     blog_summary = get(url)
+   
+    '''
+    logging.basicConfig(filename=dirname + '/log.get',level=logging.DEBUG)
+    logging.debug('url: %s\n blog_summary: %s\n' %(url, str(blog_summary)))
+    assert 1==2
+    '''
 
     if 'id' not in blog_summary:
         return None, None, None, None
 
     blog_summary['published'] = parse_time(blog_summary['published'])
     blog_summary['updated'] = parse_time(blog_summary['updated'])
-
+    
     profile_url, posts, next_page_token = get_blog_by_ID(blog_summary['id'], latest)
 
     profile = None
@@ -95,6 +103,8 @@ def get_blog_by_ID(blog_id, latest):
             post = parse_post(post)
 
             profile_url = post['author']['url']
+            post['author_url'] = profile_url
+
             # if this is the latest post already in db
             if post['published'] <= latest:
                 hit_earliest = True

@@ -28,7 +28,7 @@ def get_new_legacy(survey_id):
     params = {'Request': 'getLegacyResponseData', 'User': account['id'], \
               'Token': account['token'], 'Format': 'JSON', \
               'SurveyID': survey_id, 'Version': '2.0'}
-    # ipdb.set_trace()
+    
     # check if the file recording the lastResponseID exists
     fname = dirname + '/lastResponseID/' + survey_id
     if os.path.isfile(fname):
@@ -36,7 +36,8 @@ def get_new_legacy(survey_id):
             s = f.read().strip()
             if len(s) > 0:
                 params['LastResponseID'] = s    
-
+    
+    # ipdb.set_trace()
     params = urllib.urlencode(params)
     result = json.loads((urllib.urlopen(url % params)).read())
     
@@ -56,19 +57,27 @@ def get_profile_by_token(token, dbh):
 
 # update the profiles_surveys table in the database for a certain survey
 # by retrieving all the new data from the last retrieved data
-def update_profiles_surveys(survey_id, id_col='Token', dbh=None):
+def update_profiles_surveys(survey_id, survey_name, id_col='Token', dbh=None):
     new_records = get_new_legacy(survey_id)
     #ipdb.set_trace()
     if not dbh:
         dbh = BlogsDB.BlogsDB_Handler()
 
     for response in new_records:
-        token = new_records[response][id_col]
+        details = new_records[response]
+        token = details[id_col]
         profile_url = get_profile_by_token(token, dbh) 
         
         # update the profiles_surveys table
         stmt = 'insert ignore into profiles_surveys(profile_url, survey_id) values(%s, %s);'
         dbh.exec_stmt(stmt, [profile_url, survey_id])
+        
+        # if it's the big-5 survey, also update the big_5_from_survey table in db
+        if survey_name == 'big-5':
+            stmt = 'insert into big_5_from_survey values(%s, %s, %s, %s, %s, %s)'
+            params = [profile_url, float(details['Extraversion']), float(details['Agreeableness']),\
+                      float(details['Conscientiousness']), float(details['Neuroticism']), float(details['Openness'])]
+            dbh.exec_stmt(stmt, params)
 
 # retrieve all survey participants in a survey
 # the id_col arg is the name of the question of the survey that uniquely identifies
@@ -109,7 +118,7 @@ def surveys_taken(profile_url):
         surveys[tp[1]] = tp[0]
 
     for survey_id in surveys: 
-        update_profiles_surveys(survey_id, id_col='Token', dbh=dbh)
+        update_profiles_surveys(survey_id, surveys[survey_id], id_col='Token', dbh=dbh)
         if have_taken(profile_url, survey_id, dbh): 
             result.append(surveys[survey_id])
     return result
